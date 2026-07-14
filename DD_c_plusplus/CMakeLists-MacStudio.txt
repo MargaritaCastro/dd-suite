@@ -1,0 +1,148 @@
+cmake_minimum_required(VERSION 3.27)
+project(DD_optimization_program)
+
+set(CMAKE_CXX_STANDARD 17)
+
+include(FetchContent)
+FetchContent_Declare(
+        googletest
+        URL https://codeload.github.com/google/googletest/tar.gz/refs/tags/v1.15.2
+)
+
+find_package(Boost REQUIRED)
+if(Boost_FOUND)
+    include_directories(${Boost_INCLUDE_DIRS})
+    message(STATUS "Boost found: ${Boost_INCLUDE_DIRS}")
+else()
+    message(FATAL_ERROR "Boost not found")
+endif()
+
+FetchContent_MakeAvailable(googletest)
+
+set(GUROBI_HOME "/Library/gurobi1300/macos_universal2")
+set(GUROBI_INCLUDE_DIRS "${GUROBI_HOME}/include")
+set(GUROBI_LIB_DIRS "${GUROBI_HOME}/lib")
+
+include_directories(${GUROBI_INCLUDE_DIRS})
+link_directories(${GUROBI_LIB_DIRS})
+
+
+set(EXCEPTIONS_SOURCE
+        Exceptions/MyExceptions.h
+        Exceptions/MyExceptions.cpp)
+
+set(PROBLEMS_SOURCE
+        Examples/KnapsackInstance/KnapsackProblem.h
+        Examples/KnapsackInstance/KnapsackProblem.cpp
+        Examples/IndependentSetInstance/IndependentSetProblem.cpp
+        Examples/IndependentSetInstance/IndependentSetProblem.h
+        Examples/SetCoverInstance/SetCoverProblem.cpp
+        Examples/SetCoverInstance/SetCoverProblem.h
+        Examples/KnapsackInstance/KnapsackProblemState.h
+        Examples/KnapsackInstance/KnapsackProblemState.cpp
+        Examples/SetCoverInstance/SetCoverInstance.h
+        Examples/SetCoverInstance/SetCoverInstance.cpp
+        Examples/IndependentSetInstance/IndependentSetInstance.h
+        Examples/IndependentSetInstance/IndependentSetInstance.cpp
+        Examples/KnapsackInstance/KnapsackInstance.h
+        Examples/KnapsackInstance/KnapsackInstance.cpp
+        Examples/AbstractGurobiProblems/AbstractProblemGurobiClass.h
+        Examples/AbstractGurobiProblems/AbstractProblemGurobiClass.cpp)
+
+set(GUROBI_PROBLEMS_SOURCE
+        Examples/KnapsackInstance/KnapsackGurobiClass.h
+        Examples/KnapsackInstance/KnapsackGurobiClass.cpp
+        Examples/IndependentSetInstance/IndependentSetGurobiClass.h
+        Examples/IndependentSetInstance/IndependentSetGurobiClass.cpp
+        Examples/SetCoverInstance/SetCoverGurobiClass.h
+        Examples/SetCoverInstance/SetCoverGurobiClass.cpp)
+
+add_library(Exceptions ${EXCEPTIONS_SOURCE})
+add_library(Problems ${PROBLEMS_SOURCE})
+add_library(GurobiProblems ${GUROBI_PROBLEMS_SOURCE})
+add_library(SourceCode INTERFACE)
+
+target_include_directories(SourceCode
+        INTERFACE
+        SourceCode
+        SourceCode/AnswerStructure
+        SourceCode/DDBuilder
+        SourceCode/DDStructure
+        SourceCode/DDCutGenerators
+        SourceCode/GraphVisualization
+        SourceCode/ObjectiveFunction
+        SourceCode/Problems
+        SourceCode/DDBuilder/RestrictedDDBuilder
+        SourceCode/DDBuilder/RelaxedDDBuilder
+        SourceCode/GraphAlgorithms/DDReducer
+)
+target_include_directories(Exceptions PUBLIC Exceptions)
+target_include_directories(Problems PUBLIC Problems)
+target_include_directories(GurobiProblems PUBLIC GurobiProblems)
+
+add_executable(Main main.cpp
+        Examples/GuiHandler.h
+        Examples/GuiHandler.cpp
+        Examples/GuiStructure.h
+        Examples/GuiStructure.cpp)
+
+add_executable(MainCuts main_cuts.cpp
+        Examples/GuiHandler.h
+        Examples/GuiHandler.cpp
+        Examples/GuiStructure.h
+        Examples/GuiStructure.cpp
+        Examples/AbstractGurobiProblems/AbstractProblemGurobiClass.h
+        Examples/AbstractGurobiProblems/AbstractProblemGurobiClass.cpp)
+
+add_executable(MainGurobi main_gurobi.cpp
+        Examples/GuiHandler.h
+        Examples/GuiHandler.cpp
+        Examples/GuiStructure.h
+        Examples/GuiStructure.cpp
+        Examples/AbstractGurobiProblems/AbstractProblemGurobiClass.h
+        Examples/AbstractGurobiProblems/AbstractProblemGurobiClass.cpp)
+
+target_link_libraries(Problems PRIVATE SourceCode Exceptions)
+target_link_libraries(Main PRIVATE
+        SourceCode
+        Exceptions
+        Problems
+        GurobiProblems
+        gurobi_c++
+        gurobi130)
+target_link_libraries(MainCuts PRIVATE
+        SourceCode
+        Exceptions
+        Problems
+        GurobiProblems
+        gurobi_c++
+        gurobi130)
+target_link_libraries(MainGurobi PRIVATE
+        SourceCode
+        Exceptions
+        Problems
+        GurobiProblems
+        gurobi_c++
+        gurobi130)
+
+
+add_executable(DD_optimization_program_tests
+        Test/test_KnapsackProblem.cpp
+        Test/test_IndependentSetProblem.cpp
+        Test/test_SetCoverProblem.cpp
+        Test/test_KnapsackStateProblem.cpp
+        Test/test_Cuts.cpp
+        Test/test_GraphEqualOperation.cpp
+)
+
+target_link_libraries(DD_optimization_program_tests PRIVATE
+        SourceCode
+        Exceptions
+        gtest_main
+        Problems
+        GurobiProblems
+        gurobi_c++
+        gurobi130)
+
+include(GoogleTest)
+gtest_discover_tests(DD_optimization_program_tests)

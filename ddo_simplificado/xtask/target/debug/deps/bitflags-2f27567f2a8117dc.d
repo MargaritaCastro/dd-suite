@@ -1,0 +1,11 @@
+/Users/antoniablanco/Desktop/xtask/target/debug/deps/libbitflags-2f27567f2a8117dc.rmeta: /Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bitflags-2.9.1/src/lib.rs /Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bitflags-2.9.1/src/iter.rs /Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bitflags-2.9.1/src/parser.rs /Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bitflags-2.9.1/src/traits.rs /Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bitflags-2.9.1/src/public.rs /Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bitflags-2.9.1/src/internal.rs /Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bitflags-2.9.1/src/external.rs
+
+/Users/antoniablanco/Desktop/xtask/target/debug/deps/bitflags-2f27567f2a8117dc.d: /Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bitflags-2.9.1/src/lib.rs /Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bitflags-2.9.1/src/iter.rs /Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bitflags-2.9.1/src/parser.rs /Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bitflags-2.9.1/src/traits.rs /Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bitflags-2.9.1/src/public.rs /Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bitflags-2.9.1/src/internal.rs /Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bitflags-2.9.1/src/external.rs
+
+/Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bitflags-2.9.1/src/lib.rs:
+/Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bitflags-2.9.1/src/iter.rs:
+/Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bitflags-2.9.1/src/parser.rs:
+/Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bitflags-2.9.1/src/traits.rs:
+/Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bitflags-2.9.1/src/public.rs:
+/Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bitflags-2.9.1/src/internal.rs:
+/Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bitflags-2.9.1/src/external.rs:

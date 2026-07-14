@@ -1,0 +1,100 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+*.vscode
+*.git
+*.idea
+*.DS_store
+
+*/credenciales.txt
+
+*/cmake-build-debug/
+*/cmake-build-test/
+*/cmake-build-release/
+*/cmake-build-asan/
+build
+
+# gml extensions
+*.gml
+
+# Menos los que son necesarios para el test
+!DD_c_plusplus/Test/gml_files/*.gml
+!DD_python/Test/gml_files/*.gml
+
+# results
+*.csv
+
+# Menos los de resultados
+!data_visualization/data/*/*.csv
+
+# Solo se versiona la ultima corrida de plots y tablas
+data_visualization/plots/*/deprecated/
+data_visualization/tables/*/deprecated/
+
+# C extensions
+*.so
+
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Claude Code files
+CLAUDE.md
+.claude/
+
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
+__pypackages__/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/

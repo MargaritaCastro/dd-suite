@@ -1,0 +1,15 @@
+[workspace]
+members = [
+    "ddo",
+    #"py_ddo",
+    #
+    "xtask",
+]
+
+resolver = "2"
+
+[profile.release]
+lto              = 'fat'
+panic            = 'abort'
+opt-level        = 3
+incremental      = true

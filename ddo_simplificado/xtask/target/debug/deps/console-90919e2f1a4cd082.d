@@ -1,0 +1,11 @@
+/Users/antoniablanco/Desktop/xtask/target/debug/deps/libconsole-90919e2f1a4cd082.rmeta: /Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/console-0.15.11/src/lib.rs /Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/console-0.15.11/src/common_term.rs /Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/console-0.15.11/src/kb.rs /Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/console-0.15.11/src/term.rs /Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/console-0.15.11/src/unix_term.rs /Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/console-0.15.11/src/utils.rs /Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/console-0.15.11/src/ansi.rs
+
+/Users/antoniablanco/Desktop/xtask/target/debug/deps/console-90919e2f1a4cd082.d: /Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/console-0.15.11/src/lib.rs /Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/console-0.15.11/src/common_term.rs /Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/console-0.15.11/src/kb.rs /Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/console-0.15.11/src/term.rs /Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/console-0.15.11/src/unix_term.rs /Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/console-0.15.11/src/utils.rs /Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/console-0.15.11/src/ansi.rs
+
+/Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/console-0.15.11/src/lib.rs:
+/Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/console-0.15.11/src/common_term.rs:
+/Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/console-0.15.11/src/kb.rs:
+/Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/console-0.15.11/src/term.rs:
+/Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/console-0.15.11/src/unix_term.rs:
+/Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/console-0.15.11/src/utils.rs:
+/Users/antoniablanco/.cargo/registry/src/index.crates.io-6f17d22bba15001f/console-0.15.11/src/ansi.rs:
