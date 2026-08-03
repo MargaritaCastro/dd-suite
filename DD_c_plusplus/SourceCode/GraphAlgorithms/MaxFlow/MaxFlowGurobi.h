@@ -33,7 +33,7 @@ public:
     MaxFlowGurobi(DD<T>* DD);
 
     /**
-    * @brief Destructor de la clase MaxFlowGurobi
+    * @brief Destructor of the MaxFlowGurobi class
     */
     ~MaxFlowGurobi();
 

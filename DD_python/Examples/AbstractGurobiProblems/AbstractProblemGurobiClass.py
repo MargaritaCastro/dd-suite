@@ -285,4 +285,4 @@ class AbstractProblemGurobi(ABC):
         """
         Abstract method to add constraints to the model.
         """
-        raise NotImplementedError("add_constraints() debe ser implementado en las clases derivadas.")
+        raise NotImplementedError("add_constraints() must be implemented in the derived classes.")

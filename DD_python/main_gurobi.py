@@ -14,7 +14,7 @@ def main():
         print("\t\t-Knapsack = Problem class: KnapsackInstance")
         print("\t\t-IndependentSet = Problem class: Independent Set")
         print("\t\t-SOCKnapsack = Problem class: SOC Knapsack")
-        print("\t\t-Scheduler = Problem class: Scheduler")
+        print("\t\t-Sequencing = Problem class: Sequencing")
         print("\t\t-Verbose  = Enable verbose mode")
         print("\t\t-Continuous = Continuous variables; if not selected, variables will be integers")
         print("\t\t-Output_ = Output file path")
@@ -40,8 +40,8 @@ def main():
             problem_class = ProblemClass.INDEPENDENT_SET
         elif arg == "-SOCKnapsack":
             problem_class = ProblemClass.SOC_KNAPSACK
-        elif arg == "-Scheduler":
-            problem_class = ProblemClass.SCHEDULER
+        elif arg == "-Sequencing":
+            problem_class = ProblemClass.SEQUENCING
         elif arg == "-Verbose":
             verbose_flag = True
         elif arg == "-Continuous":

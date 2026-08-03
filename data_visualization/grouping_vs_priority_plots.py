@@ -1,14 +1,9 @@
-"""Compara el relax por GROUPING (DD Type 'RelaxGrouping') contra el relax por
-PRIORITY (DD Type 'Relaxed'). Ambos viven ahora en el mismo archivo
-results_<lang>_*.csv y se distinguen por la columna 'DD Type'.
+"""Compares the GROUPING relaxation against the PRIORITY one (both live in
+results_<lang>_*.csv, told apart by 'DD Type').
 
-Por cada lenguaje (Python y C++) genera 2 scatter plots:
-  1) Tiempo de construcción: grouping vs priority (color por Problem type).
-  2) Cotas como % de gap respecto al óptimo del DD Exact (color por Max Width).
-
-En ambos cada punto es una instancia (File_name + Max Width). La diagonal
-punteada marca grouping == priority: puntos por debajo => grouping mejor (menos
-tiempo / gap más chico), por encima => peor.
+Per language, 2 scatter plots: construction time, and bound gap % vs the Exact DD
+optimum. Each point is an (instance, Max Width) pair; below the dashed diagonal
+means grouping is better.
 """
 
 import glob
@@ -32,8 +27,7 @@ plt.rcParams.update({
 
 
 def archive_existing(folder):
-    """Crea 'folder' y su 'deprecated/' y mueve ahí las salidas ya existentes
-    antes de generar nuevas, para no acumular versiones viejas en la raíz."""
+    """Move the existing outputs of 'folder' into its 'deprecated/' subfolder."""
     deprecated = os.path.join(folder, "deprecated")
     os.makedirs(deprecated, exist_ok=True)
     for path in glob.glob(os.path.join(folder, "*")):
@@ -49,20 +43,16 @@ archive_existing(PLOTS_DIR)
 ts            = datetime.now().strftime("%Y%m%d_%H%M%S")
 
 WIDTHS        = [500, 1000, 2000, 5000, 10000, 20000]
-PRIORITY_TYPE = "RelaxPriority"  # relax por prioridad (descarte/merge por prioridad)
-GROUPING_TYPE = "RelaxGrouping"  # relax por agrupamiento
-EXACT_TYPE    = "Exact"          # DD exacto -> óptimo de referencia para el gap
+PRIORITY_TYPE = "RelaxPriority"  # priority-based relax (discard/merge by priority)
+GROUPING_TYPE = "RelaxGrouping"  # grouping-based relax
+EXACT_TYPE    = "Exact"          # exact DD -> reference optimum for the gap
 
 
-# ── Helpers de carga ────────────────────────────────────────────────────────────
+# ── Loading helpers ─────────────────────────────────────────────────────────────
 
 def _file_datetime(path):
-    """Extrae el datetime del nombre '..._DD_MM_YYYY_HH-MM-SS.csv'.
-
-    No se puede ordenar los nombres como strings: el dia va primero, asi que
-    '27_05_2026' (27 may) ordenaria despues de '01_06_2026' (1 jun). Hay que
-    parsear la fecha real.
-    """
+    """Extract the datetime from a name '..._DD_MM_YYYY_HH-MM-SS.csv'. The names
+    cannot be sorted as strings: the day comes first, so the date must be parsed."""
     m = re.search(r"(\d{2}_\d{2}_\d{4}_\d{2}-\d{2}-\d{2})", os.path.basename(path))
     if not m:
         return datetime.fromtimestamp(os.path.getmtime(path))
@@ -81,17 +71,19 @@ def load_latest(folder, pattern):
     for col in ["Construction Time", "Max Width", "Optimization Value", "Variables number"]:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
-    print(f"  {os.path.basename(path)}  ({len(df)} filas)")
+    print(f"  {os.path.basename(path)}  ({len(df)} rows)")
     return df
 
 
-_PROBLEM_TYPE_MAP = {"IndependentSet": "Independent Set", "Set Covering": "Set Cover"}
+_PROBLEM_TYPE_MAP = {"IndependentSet": "Independent Set", "Set Covering": "Set Cover",
+                     # Legacy alias: CSVs predating the rename carry "Scheduler".
+                     "Scheduler": "Sequencing"}
 
 def norm_problem_type(s):
     return _PROBLEM_TYPE_MAP.get(str(s).strip(), str(s).strip())
 
 def norm_key(s):
-    """Quita extensiones conocidas y unifica set_covering_ -> set_cover_."""
+    """Strip known extensions and unify set_covering_ -> set_cover_."""
     s = str(s).strip()
     for ext in (".txt", ".clq", ".col"):
         if s.endswith(ext):
@@ -100,42 +92,39 @@ def norm_key(s):
     return s.replace("set_covering_", "set_cover_")
 
 
-# ── Referencia de óptimos (Gurobi) ──────────────────────────────────────────────
-# Gurobi y el DD Exact dan el mismo óptimo; se combinan para maximizar cobertura.
+# ── Reference optima (Gurobi) ───────────────────────────────────────────────────
+# Gurobi and the Exact DD give the same optimum; they are combined to maximize coverage.
 
-print("Cargando referencia Gurobi:")
+print("Loading Gurobi reference:")
 df_gpy = load_latest(PY_DIR, "results_gurobi_python_*.csv")
 if df_gpy is None:
     GUROBI_REF = {}
-    print("  (sin archivo Gurobi; se usará sólo el Exact)")
+    print("  (no Gurobi file; only the Exact DD will be used)")
 else:
     df_gpy["File_key"]     = df_gpy["File_name"].apply(norm_key)
     df_gpy["Problem type"] = df_gpy["Problem type"].apply(norm_problem_type)
     df_gpy["Gurobi_Sol"]   = pd.to_numeric(df_gpy["Best solution"], errors="coerce")
     GUROBI_REF = (df_gpy.dropna(subset=["Gurobi_Sol"])
                   .groupby(["File_key", "Problem type"])["Gurobi_Sol"].mean().to_dict())
-    print(f"  Referencia Gurobi: {len(GUROBI_REF)} instancias")
+    print(f"  Gurobi reference: {len(GUROBI_REF)} instances")
 
 
-# ── Construcción del DataFrame comparado por lenguaje ───────────────────────────
+# ── Building the per-language comparison DataFrame ──────────────────────────────
 
 def build_comparison(folder, prefix):
-    """Devuelve un DataFrame con una fila por (instancia, Max Width) que tiene
-    columnas *_priority y *_grouping de Construction Time y Gap %.
-
-    Priority (DD Type 'RelaxPriority') y grouping (DD Type 'RelaxGrouping') viven
-    ahora en el mismo archivo results_<prefix>_*.csv y se separan por 'DD Type'."""
+    """Return a DataFrame with one row per (instance, Max Width) holding the
+    *_priority and *_grouping columns of Construction Time and Gap %."""
     df = load_latest(folder, f"results_{prefix}_*.csv")
 
     if df is None:
-        print(f"  ⏭️  No hay archivo de resultados para {prefix}")
+        print(f"  ⏭️  No results file for {prefix}")
         return None
 
     def prep(dd_type):
         sub = df[(df["DD Type"] == dd_type) & (df["Max Width"].isin(WIDTHS))].copy()
         sub["File_key"]     = sub["File_name"].apply(norm_key)
         sub["Problem type"] = sub["Problem type"].apply(norm_problem_type)
-        # Promedia repeticiones de la misma (instancia, width) si las hubiera
+        # Average repetitions of the same (instance, width) if there are any
         return (sub.groupby(["File_key", "Problem type", "Max Width"], as_index=False)
                    .agg({"Construction Time": "mean", "Optimization Value": "mean"}))
 
@@ -143,29 +132,28 @@ def build_comparison(folder, prefix):
     grp  = prep(GROUPING_TYPE)
 
     if prio.empty or grp.empty:
-        print(f"  ⏭️  Sin filas {PRIORITY_TYPE}/{GROUPING_TYPE} para {prefix}")
+        print(f"  ⏭️  No {PRIORITY_TYPE}/{GROUPING_TYPE} rows for {prefix}")
         return None
 
-    # Referencia de óptimos: valor del DD Exact del mismo lenguaje (independiente
-    # del width) combinado con Gurobi (dan el mismo óptimo). Se prioriza el Exact
-    # y se rellena con Gurobi lo que falte. Sin referencia => gap NaN y se descarta.
+    # Reference optima: the Exact DD value, with Gurobi filling in the rest.
+    # No reference => NaN gap and the row is discarded.
     exact = df[df["DD Type"] == EXACT_TYPE].copy()
     exact["File_key"]     = exact["File_name"].apply(norm_key)
     exact["Problem type"] = exact["Problem type"].apply(norm_problem_type)
     exact_ref = (exact.groupby(["File_key", "Problem type"])["Optimization Value"]
                  .mean().to_dict())
-    ref = {**GUROBI_REF, **exact_ref}   # Exact pisa a Gurobi donde ambos existen
-    print(f"  Referencia óptimos: {len(ref)} instancias "
+    ref = {**GUROBI_REF, **exact_ref}   # Exact overrides Gurobi where both exist
+    print(f"  Reference optima: {len(ref)} instances "
           f"(Exact {len(exact_ref)} + Gurobi {len(GUROBI_REF)})")
 
     merged = prio.merge(grp, on=["File_key", "Problem type", "Max Width"],
                         suffixes=("_priority", "_grouping"))
     if merged.empty:
-        print(f"  ⏭️  El merge priority/grouping quedó vacío para {prefix}")
+        print(f"  ⏭️  The priority/grouping merge came out empty for {prefix}")
         return None
 
-    # Gap en valor absoluto respecto al óptimo: |cota - opt| / |opt|. Siempre >= 0
-    # para que el gráfico viva en el cuadrante 1.
+    # Absolute gap with respect to the optimum: |bound - opt| / |opt|. Always >= 0
+    # so that the plot lives in the first quadrant.
     def gap_pct(row, col):
         opt = ref.get((row["File_key"], row["Problem type"]), np.nan)
         val = row[col]
@@ -176,11 +164,11 @@ def build_comparison(folder, prefix):
     merged["Gap_priority"] = merged.apply(lambda r: gap_pct(r, "Optimization Value_priority"), axis=1)
     merged["Gap_grouping"] = merged.apply(lambda r: gap_pct(r, "Optimization Value_grouping"), axis=1)
 
-    print(f"  ✅ {prefix}: {len(merged)} pares (instancia, width) comparados")
+    print(f"  ✅ {prefix}: {len(merged)} (instance, width) pairs compared")
     return merged
 
 
-# ── Scatter genérico coloreado por una categoría ────────────────────────────────
+# ── Generic scatter colored by a category ───────────────────────────────────────
 
 WIDTH_CMAP  = plt.colormaps["viridis"]
 WIDTH_COLOR = {w: WIDTH_CMAP(i / max(1, len(WIDTHS) - 1)) for i, w in enumerate(WIDTHS)}
@@ -192,17 +180,17 @@ def scatter_compare(df, x_col, y_col, color_col, title, xlabel, ylabel,
 
     data = df.dropna(subset=[x_col, y_col]).copy()
     if data.empty:
-        print(f"  ⏭️  Sin datos para '{title}'")
+        print(f"  ⏭️  No data for '{title}'")
         plt.close()
         return
 
     x = data[x_col].to_numpy(dtype=float)
     y = data[y_col].to_numpy(dtype=float)
-    if floor is not None:                       # evita ceros/negativos en escala log
+    if floor is not None:                       # avoid zeros/negatives on a log scale
         x = np.clip(x, floor, None)
         y = np.clip(y, floor, None)
 
-    # Orden y paleta fijos según la columna de color
+    # Fixed ordering and palette according to the color column
     if color_col == "Max Width":
         categories = [w for w in WIDTHS if (data[color_col] == w).any()]
         color_of = lambda c: WIDTH_COLOR[c]
@@ -219,7 +207,7 @@ def scatter_compare(df, x_col, y_col, color_col, title, xlabel, ylabel,
                     edgecolors="black", linewidths=0.3,
                     label=f"{label_prefix}{c} ({int(m.sum())})")
 
-    # Diagonal de referencia priority == grouping
+    # Reference diagonal priority == grouping
     lo = float(min(x.min(), y.min()))
     hi = float(max(x.max(), y.max()))
     plt.plot([lo, hi], [lo, hi], ls="--", color="gray", lw=1, label="grouping = priority")
@@ -238,19 +226,18 @@ def scatter_compare(df, x_col, y_col, color_col, title, xlabel, ylabel,
     plt.tight_layout()
     plt.savefig(output_path, dpi=150)
     plt.close()
-    print(f"  💾 Guardado: {output_path}")
+    print(f"  💾 Saved: {output_path}")
 
 
-# ── Gap medio vs width (una línea por tipo de relax) ────────────────────────────
+# ── Mean gap vs width (one line per relax type) ─────────────────────────────────
 
 RELAX_COLORS = {"priority": "#1f77b4", "grouping": "#d62728"}
-IQR_WHISKER  = 1.5   # regla de Tukey: descartar fuera de [Q1−1.5·IQR, Q3+1.5·IQR]
+IQR_WHISKER  = 1.5   # Tukey rule: discard outside [Q1-1.5*IQR, Q3+1.5*IQR]
 
 def _iqr_filter(vals):
-    """Quita outliers con la regla del IQR (Tukey) y devuelve la serie filtrada
-    junto con cuántos se descartaron. Si no quedara nada, conserva el original."""
+    """Drop outliers with the IQR rule; if nothing is left, keep the original."""
     vals = vals.dropna()
-    if len(vals) < 4:                       # muy pocos datos para definir outliers
+    if len(vals) < 4:                       # too little data to define outliers
         return vals, 0
     q1, q3 = vals.quantile(0.25), vals.quantile(0.75)
     iqr = q3 - q1
@@ -261,9 +248,8 @@ def _iqr_filter(vals):
     return kept, len(vals) - len(kept)
 
 def gap_vs_width(merged, lang_label, prefix):
-    """Un archivo por example: gap% vs Max Width con una línea por tipo de relax
-    (priority/grouping). En cada width se descartan los outliers con la regla del
-    IQR; la línea es el promedio de los datos restantes y la banda su p25–p75."""
+    """One file per example: gap% vs Max Width, one line per relax type. Outliers are
+    dropped with the IQR rule; the band is the p25-p75 of what remains."""
     for problem in sorted(merged["Problem type"].unique()):
         sub = merged[merged["Problem type"] == problem]
         plt.figure(figsize=(8, 6))
@@ -307,10 +293,10 @@ def gap_vs_width(merged, lang_label, prefix):
             PLOTS_DIR, f"grouping_vs_priority_gap_{prefix}_{safe_problem}_{ts}.png")
         plt.savefig(output_path, dpi=150)
         plt.close()
-        print(f"  💾 Guardado: {output_path}")
+        print(f"  💾 Saved: {output_path}")
 
 
-# ── Generación ──────────────────────────────────────────────────────────────────
+# ── Generation ──────────────────────────────────────────────────────────────────
 
 LANGS = [("python", "Python", PY_DIR), ("cpp", "C++", CPP_DIR)]
 
@@ -320,15 +306,15 @@ for prefix, lang_label, folder in LANGS:
     if merged is None:
         continue
 
-    # 1) Tiempo de construcción (log-log; el grouping puede ser muy chico)
-    #    color por Problem type
+    # 1) Construction time (log-log; grouping can be very small)
+    #    colored by Problem type
     scatter_compare(
         merged,
         x_col="Construction Time_priority",
         y_col="Construction Time_grouping",
         color_col="Problem type",
-        title=f"{lang_label} — Tiempo de construcción: grouping vs priority\n"
-              "(bajo la diagonal => grouping más rápido)",
+        title=f"{lang_label} — Construction time: grouping vs priority\n"
+              "(below the diagonal => grouping is faster)",
         xlabel="Construction Time priority (s)",
         ylabel="Construction Time grouping (s)",
         output_path=os.path.join(PLOTS_DIR, f"grouping_vs_priority_time_{prefix}_{ts}.png"),
@@ -336,8 +322,8 @@ for prefix, lang_label, folder in LANGS:
         floor=1e-6,
     )
 
-    # 2) Gap de la cota (%) vs Max Width, una línea por tipo de relax.
-    #    Un archivo por cada example (Problem type).
+    # 2) Bound gap (%) vs Max Width, one line per relax type.
+    #    One file per example (Problem type).
     gap_vs_width(merged, lang_label, prefix)
 
-print("\nListo!")
+print("\nDone!")

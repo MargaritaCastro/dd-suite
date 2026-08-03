@@ -14,7 +14,7 @@ def get_exact_dd_independent_set():
     node_0 = Node('0', bitarray('11111') )
     graph = Graph(node_0)
 
-    # Crear la segunda capa de nodos
+    # Build the second layer of nodes
     graph.add_new_layer()
     node_1 = Node('1', bitarray('01111') )
     arc_0_1 = Arc(node_0, node_1, 0)
@@ -67,7 +67,7 @@ def get_exact_dd_independent_set():
     node_7.in_arcs.append(arc_4_7)
     graph.add_node(node_7)
 
-    # Crear la quinta capa de nodos
+    # Build the fifth layer of nodes
     graph.add_new_layer()
     node_8 = Node('8', bitarray('00001') )
     arc_6_8 = Arc(node_6, node_8, 0)
@@ -84,7 +84,7 @@ def get_exact_dd_independent_set():
     node_9.in_arcs.append(arc_6_9)
     graph.add_node(node_9)
 
-    # Crear la sexta capa de nodos
+    # Build the sixth layer of nodes
     graph.add_new_layer()
     node_10 = Node('10', bitarray('00000') )
     arc_8_10_1 = Arc(node_8, node_10, 0)
@@ -103,7 +103,7 @@ def get_restricted_dd_independent_set():
     node_0 = Node('0', bitarray('11111') )
     graph = Graph(node_0)
 
-    # Crear la segunda capa de nodos
+    # Build the second layer of nodes
     graph.add_new_layer()
     node_1 = Node('1', bitarray('01111') )
     arc_0_1 = Arc(node_0, node_1, 0)
@@ -144,7 +144,7 @@ def get_restricted_dd_independent_set():
     node_6.in_arcs.append(arc_4_6)
     graph.add_node(node_6)
 
-    # Crear la quinta capa de nodos
+    # Build the fifth layer of nodes
     graph.add_new_layer()
     node_7 = Node('7', bitarray('00001') )
     arc_5_7 = Arc(node_5, node_7, 0)
@@ -161,7 +161,7 @@ def get_restricted_dd_independent_set():
     node_8.in_arcs.append(arc_6_8)
     graph.add_node(node_8)
 
-    # Crear la sexta capa de nodos
+    # Build the sixth layer of nodes
     graph.add_new_layer()
     node_9 = Node('9', bitarray('00000') )
     arc_7_9_1 = Arc(node_7, node_9, 0)
@@ -180,7 +180,7 @@ def get_relaxed_dd_independent_set():
     node_0 = Node('0', bitarray('11111') )
     graph = Graph(node_0)
 
-    # Crear la segunda capa de nodos
+    # Build the second layer of nodes
     graph.add_new_layer()
     node_1 = Node('1', bitarray('01111') )
     arc_0_1 = Arc(node_0, node_1, 0)
@@ -227,7 +227,7 @@ def get_relaxed_dd_independent_set():
     node_6.in_arcs.append(arc_4_6)
     graph.add_node(node_6)
 
-    # Crear la quinta capa de nodos
+    # Build the fifth layer of nodes
     graph.add_new_layer()
     node_7 = Node('7', bitarray('00001') )
     arc_5_7 = Arc(node_5, node_7, 0)
@@ -244,7 +244,7 @@ def get_relaxed_dd_independent_set():
     node_8.in_arcs.append(arc_6_8)
     graph.add_node(node_8)
 
-    # Crear la sexta capa de nodos
+    # Build the sixth layer of nodes
     graph.add_new_layer()
     node_9 = Node('9', bitarray('00000') )
     arc_7_9_op1 = Arc(node_7, node_9, 0)

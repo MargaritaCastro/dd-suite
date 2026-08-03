@@ -7,7 +7,7 @@ string to_string(ProblemClass problem_class) {
         case ProblemClass::Knapsack:       return "Knapsack";
         case ProblemClass::IndependentSet: return "Independent Set";
         case ProblemClass::SOCKnapsack:    return "SOC Knapsack";
-        case ProblemClass::Scheduler:      return "Scheduler";
+        case ProblemClass::Sequencing:      return "Sequencing";
         default:                           return "None";
     }
 }
@@ -187,10 +187,10 @@ void run_dd_code(GuiStructure gui_structure) {
             delete sock_params;
             break;
         }
-        case ProblemClass::Scheduler: {
-            SchedulerInstance* params = new SchedulerInstance(gui_structure.input_file_path);
-            SchedulerProblem* problem = new SchedulerProblem(*params);
-            create_and_solve_dd<SchedulerState, SchedulerPathSolver>(problem, params->objective_weights, gui_structure);
+        case ProblemClass::Sequencing: {
+            SequencingInstance* params = new SequencingInstance(gui_structure.input_file_path);
+            SequencingProblem* problem = new SequencingProblem(*params);
+            create_and_solve_dd<SequencingState, SequencingPathSolver>(problem, params->objective_weights, gui_structure);
             delete problem;
             delete params;
             break;
@@ -365,11 +365,11 @@ void run_gurobi_dd(const GuiCutsStructure& gui_cuts_structure) {
             delete sock_params;
             break;
         }
-        case ProblemClass::Scheduler: {
-            SchedulerInstance* params = new SchedulerInstance(gui_cuts_structure.input_file_path);
-            SchedulerGurobiClass gurobi_instance(*params, gui_cuts_structure.continuous_flag);
-            SchedulerProblem problem_instance(*params);
-            gurobi_dd_cutting_planes<SchedulerGurobiClass, SchedulerState>(
+        case ProblemClass::Sequencing: {
+            SequencingInstance* params = new SequencingInstance(gui_cuts_structure.input_file_path);
+            SequencingGurobiClass gurobi_instance(*params, gui_cuts_structure.continuous_flag);
+            SequencingProblem problem_instance(*params);
+            gurobi_dd_cutting_planes<SequencingGurobiClass, SequencingState>(
                 gui_cuts_structure, gurobi_instance, &problem_instance);
             delete params;
             break;
@@ -416,9 +416,9 @@ void gurobi_ilp(GuiGurobiStructure gui_gurobi_structure) {
             delete sock_params;
             break;
         }
-        case ProblemClass::Scheduler: {
-            SchedulerInstance* params = new SchedulerInstance(gui_gurobi_structure.input_file_path);
-            gurobi_instance = new SchedulerGurobiClass(*params, gui_gurobi_structure.continuous);
+        case ProblemClass::Sequencing: {
+            SequencingInstance* params = new SequencingInstance(gui_gurobi_structure.input_file_path);
+            gurobi_instance = new SequencingGurobiClass(*params, gui_gurobi_structure.continuous);
             delete params;
             break;
         }

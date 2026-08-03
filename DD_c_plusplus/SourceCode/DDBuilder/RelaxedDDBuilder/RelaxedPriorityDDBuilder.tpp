@@ -8,8 +8,13 @@ using namespace std;
 
 template <typename T>
 bool NodeMergeComparator<T>::operator()(const Node<T>* node_one, const Node<T>* node_two) const {
-    return this->problem.get_priority_for_merge_nodes(node_one->get_id(), node_one->state) >
-           this->problem.get_priority_for_merge_nodes(node_two->get_id(), node_two->state);
+    const int priority_one = this->problem.get_priority_for_merge_nodes(node_one->get_id(), node_one->state);
+    const int priority_two = this->problem.get_priority_for_merge_nodes(node_two->get_id(), node_two->state);
+
+    if (priority_one != priority_two) {
+        return priority_one > priority_two;
+    }
+    return node_one->get_id() < node_two->get_id();
 }
 
 template <typename T>

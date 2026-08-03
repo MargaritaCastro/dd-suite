@@ -12,7 +12,7 @@ class ProblemClass(Enum):
     KNAPSACK = "KnapsackInstance"
     INDEPENDENT_SET = "IndependentSetInstance"
     SOC_KNAPSACK = "SOCKnapsackInstance"
-    SCHEDULER = "SchedulerInstance"
+    SEQUENCING = "SequencingInstance"
 
 class CutType(Enum):
     FLOW       = "FlowCuts"
@@ -24,7 +24,7 @@ VALID_CUTS: dict[ProblemClass, list[CutType]] = {
     ProblemClass.INDEPENDENT_SET: [CutType.FLOW, CutType.JOINT_FLOW, CutType.TARGET],
     ProblemClass.SET_COVER:       [CutType.FLOW, CutType.JOINT_FLOW, CutType.TARGET],
     ProblemClass.SOC_KNAPSACK:    [CutType.FLOW, CutType.JOINT_FLOW, CutType.TARGET],
-    ProblemClass.SCHEDULER:       [CutType.TARGET],
+    ProblemClass.SEQUENCING:       [CutType.TARGET],
 }
 
 class DDType(Enum):

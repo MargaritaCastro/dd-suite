@@ -1,9 +1,9 @@
 # ── Testing ───────────────────────────────────────────────────────────────────
 
 .PHONY: test pytest coverage report html \
-        main_knapsack main_independent_set main_set_cover main_socknapsack main_scheduler \
-        gurobi_knapsack gurobi_independent_set gurobi_set_cover gurobi_socknapsack gurobi_scheduler \
-        cuts_knapsack cuts_independent_set cuts_set_cover cuts_socknapsack cuts_scheduler
+        main_knapsack main_independent_set main_set_cover main_socknapsack main_sequencing \
+        gurobi_knapsack gurobi_independent_set gurobi_set_cover gurobi_socknapsack gurobi_sequencing \
+        cuts_knapsack cuts_independent_set cuts_set_cover cuts_socknapsack cuts_sequencing
 
 test:
 	python -m unittest discover -v -s ./Test -p "test_*.py" -b
@@ -35,8 +35,8 @@ main_set_cover:
 main_socknapsack:
 	python main.py ../DataInstances/SOCKnapsack/knapsack_n5m2o1b5_1.txt -SOCKnapsack -Exact -Output_results.csv -Max -Width_20 -Reduce
 
-main_scheduler:
-	python main.py ../DataInstances/Scheduler/Custom/scheduler_n5_s025_seed1.txt -Scheduler -Exact -Output_results.csv -Min
+main_sequencing:
+	python main.py ../DataInstances/Sequencing/Custom/sequencing_n5_s025_seed1.txt -Sequencing -Exact -Output_results.csv -Min
 
 
 # ── main_gurobi.py ────────────────────────────────────────────────────────────
@@ -53,8 +53,8 @@ gurobi_set_cover:
 gurobi_socknapsack:
 	python main_gurobi.py ../DataInstances/SOCKnapsack/knapsack_n5m2o1b5_1.txt -SOCKnapsack -Output_resultsGurobiSock.csv
 
-gurobi_scheduler:
-	python main_gurobi.py ../DataInstances/Scheduler/Custom/scheduler_n5_s025_seed1.txt -Scheduler
+gurobi_sequencing:
+	python main_gurobi.py ../DataInstances/Sequencing/Custom/sequencing_n5_s025_seed1.txt -Sequencing
 
 
 # ── main_cuts.py ──────────────────────────────────────────────────────────────
@@ -71,5 +71,5 @@ cuts_set_cover:
 cuts_socknapsack:
 	python main_cuts.py ../DataInstances/SOCKnapsack/knapsack_n5m2o1b5_1.txt -SOCKnapsack -JointFlowCuts -Verbose -Strength -Output_resultCutsSock.csv -Continuous
 
-cuts_scheduler:
-	python main_cuts.py ../DataInstances/Scheduler/Custom/scheduler_n5_s025_seed1.txt -Scheduler -TargetCuts -Verbose -Output_resultCuts.csv -Continuous
+cuts_sequencing:
+	python main_cuts.py ../DataInstances/Sequencing/Custom/sequencing_n5_s025_seed1.txt -Sequencing -TargetCuts -Verbose -Output_resultCuts.csv -Continuous

@@ -23,10 +23,10 @@ from Examples.IndependentSetInstance.IndependentSetGurobiClass import Independen
 from Examples.SOCKnapsack.SOCKnapsackInstance import SOCKnapsackInstance
 from Examples.SOCKnapsack.SOCKnapsackProblem import SOCKnapsackProblem
 from Examples.SOCKnapsack.SOCKnapsackGurobiClass import SOCKnapsackGurobi
-from Examples.SchedulerInstance.SchedulerInstance import SchedulerStructure
-from Examples.SchedulerInstance.SchedulerProblem import SchedulerProblem
-from Examples.SchedulerInstance.SchedulerPathSolver import SchedulerPathSolver
-from Examples.SchedulerInstance.SchedulerGurobiClass import SchedulerGurobi
+from Examples.SequencingInstance.SequencingInstance import SequencingStructure
+from Examples.SequencingInstance.SequencingProblem import SequencingProblem
+from Examples.SequencingInstance.SequencingPathSolver import SequencingPathSolver
+from Examples.SequencingInstance.SequencingGurobiClass import SequencingGurobi
 
 tolerance = 1e-6
 
@@ -42,8 +42,8 @@ def to_string_problem_class(problem_class: ProblemClass) -> str:
         return "Independent Set"
     elif problem_class == ProblemClass.SOC_KNAPSACK:
         return "SOC Knapsack"
-    elif problem_class == ProblemClass.SCHEDULER:
-        return "Scheduler"
+    elif problem_class == ProblemClass.SEQUENCING:
+        return "Sequencing"
     else:
         return "None"
 
@@ -180,10 +180,10 @@ def run_dd_code(gui_structure: GuiStructure) -> None:
         problem_instance: SOCKnapsackProblem = SOCKnapsackProblem(sock_params, 0, sort=gui_structure.sort)
         create_and_solve_dd(problem_instance, sock_params.objective_weights, gui_structure)
 
-    elif gui_structure.problem_class == ProblemClass.SCHEDULER:
-        scheduler_parameters: SchedulerStructure = SchedulerStructure(gui_structure.input_file_path)
-        problem_instance: SchedulerProblem = SchedulerProblem(scheduler_parameters, sort=gui_structure.sort)
-        create_and_solve_dd(problem_instance, scheduler_parameters.objective_weights, gui_structure, solver_class=SchedulerPathSolver)
+    elif gui_structure.problem_class == ProblemClass.SEQUENCING:
+        sequencing_parameters: SequencingStructure = SequencingStructure(gui_structure.input_file_path)
+        problem_instance: SequencingProblem = SequencingProblem(sequencing_parameters, sort=gui_structure.sort)
+        create_and_solve_dd(problem_instance, sequencing_parameters.objective_weights, gui_structure, solver_class=SequencingPathSolver)
 
     elif gui_structure.problem_class == ProblemClass.NONE:
         print("Error: No problem class specified")
@@ -324,10 +324,10 @@ def run_gurobi_dd(gui_cuts_structure: GuiCutsStructure) -> None:
         gurobi_instance: SOCKnapsackGurobi = SOCKnapsackGurobi(sock_params, gui_cuts_structure.continuous_flag)
         gurobi_dd_cutting_planes_soc(gui_cuts_structure, gurobi_instance, sock_params)
 
-    elif gui_cuts_structure.problem_class == ProblemClass.SCHEDULER:
-        scheduler_parameters: SchedulerStructure = SchedulerStructure(gui_cuts_structure.input_file_path)
-        gurobi_instance: SchedulerGurobi = SchedulerGurobi(scheduler_parameters, gui_cuts_structure.continuous_flag)
-        problem_instance: SchedulerProblem = SchedulerProblem(scheduler_parameters)
+    elif gui_cuts_structure.problem_class == ProblemClass.SEQUENCING:
+        sequencing_parameters: SequencingStructure = SequencingStructure(gui_cuts_structure.input_file_path)
+        gurobi_instance: SequencingGurobi = SequencingGurobi(sequencing_parameters, gui_cuts_structure.continuous_flag)
+        problem_instance: SequencingProblem = SequencingProblem(sequencing_parameters)
         gurobi_dd_cutting_planes(gui_cuts_structure, gurobi_instance, problem_instance)
 
     elif gui_cuts_structure.problem_class == ProblemClass.NONE:
@@ -357,9 +357,9 @@ def gurobi_ilp(gui_gurobi_structure: GuiGurobiStructure) -> None:
         sock_params: SOCKnapsackInstance = SOCKnapsackInstance(gui_gurobi_structure.input_file_path)
         gurobi_instance: SOCKnapsackGurobi = SOCKnapsackGurobi(sock_params, gui_gurobi_structure.continuous)
 
-    elif gui_gurobi_structure.problem_class == ProblemClass.SCHEDULER:
-        scheduler_parameters: SchedulerStructure = SchedulerStructure(gui_gurobi_structure.input_file_path)
-        gurobi_instance: SchedulerGurobi = SchedulerGurobi(scheduler_parameters, gui_gurobi_structure.continuous)
+    elif gui_gurobi_structure.problem_class == ProblemClass.SEQUENCING:
+        sequencing_parameters: SequencingStructure = SequencingStructure(gui_gurobi_structure.input_file_path)
+        gurobi_instance: SequencingGurobi = SequencingGurobi(sequencing_parameters, gui_gurobi_structure.continuous)
 
     elif gui_gurobi_structure.problem_class == ProblemClass.NONE:
         print("Error: No problem class specified")

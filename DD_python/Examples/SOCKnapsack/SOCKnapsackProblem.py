@@ -154,8 +154,8 @@ class SOCKnapsackProblem(AbstractProblem):
         - state ('State'): State of the node.
         '''
         if state[0] < 0:
-            return state[0]
-        return -(state[0] + self.omega * math.sqrt(state[1]))
+            return int(state[0])
+        return -int(state[0] + self.omega * math.sqrt(state[1]))
 
     def get_priority_for_merge_nodes(self, id: int, state: 'State') -> int:
         '''

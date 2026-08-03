@@ -174,7 +174,7 @@ pub fn read_instance<P: AsRef<Path>>(fname: P) -> Result<Knapsack, Error> {
     let mut is_first = true;
     let mut n = 0;
     let mut count = 0;
-    let mut capa = 0;
+    let mut capacity = 0;
     let mut profit = vec![];
     let mut weight = vec![];
 
@@ -187,7 +187,7 @@ pub fn read_instance<P: AsRef<Path>>(fname: P) -> Result<Knapsack, Error> {
             is_first = false;
             let mut ab = line.split(' ');
             n = ab.next().ok_or(Error::Format)?.parse()?;
-            capa = ab.next().ok_or(Error::Format)?.parse()?;
+            capacity = ab.next().ok_or(Error::Format)?.parse()?;
         } else {
             if count >= n {
                 break;
@@ -198,7 +198,7 @@ pub fn read_instance<P: AsRef<Path>>(fname: P) -> Result<Knapsack, Error> {
             count += 1;
         }
     }
-    Ok(Knapsack::new(capa, profit, weight))
+    Ok(Knapsack::new(capacity, profit, weight))
 }
 
 /// The last bit of information which we need to provide when implementing a ddo-based
@@ -230,14 +230,14 @@ fn main() {
     let input_file = &args[1];
     let output_file = &args[2];
     let comp_type_str = &args[3];
-    let max_width: usize = args[4].parse().expect("max_width debe ser un número");
+    let max_width: usize = args[4].parse().expect("max_width must be a number");
 
     let comp_type = match comp_type_str.to_lowercase().as_str() {
         "exact" => CompilationType::Exact,
         "relaxed" => CompilationType::Relaxed,
         "restricted" => CompilationType::Restricted,
         _ => {
-            eprintln!("Tipo de compilación inválido. Usa: Exact | Relaxed | Restricted");
+            eprintln!("Invalid compilation type. Use: Exact | Relaxed | Restricted");
             std::process::exit(1);
         }
     };
@@ -298,21 +298,21 @@ fn main() {
             println!("Duration:   {:.5} seconds", duration.as_secs_f32());
             println!("Is exact: {}", dd.is_exact());
 
-            // Imprime el valor óptimo si existe
+            // Print the optimal value if it exists
             if let Some(value) = dd.best_value() {
                 println!("Best value: {}", value);
             } else {
                 println!("No feasible solution found.");
             }
 
-            // Imprime la mejor solución si existe
+            // Print the best solution if it exists
             if let Some(solution) = dd.best_solution() {
                 println!("Best solution: {:?}", solution);
             } else {
                 println!("No feasible solution found.");
             }
 
-            // Imprimir la representación DOT del diagrama de decisión
+            // Print the DOT representation of the decision diagram
             let config = VizConfigBuilder::default()
                 .show_deleted(true)
                 .group_merged(true)
@@ -322,7 +322,7 @@ fn main() {
             write_dot_file(dot_representation, "knapsack.dot");
             */
             
-            // Imprimir el resultado en un archivo CSV
+            // Write the result to a CSV file
             use std::fs::OpenOptions;
             use std::io::Write;
 

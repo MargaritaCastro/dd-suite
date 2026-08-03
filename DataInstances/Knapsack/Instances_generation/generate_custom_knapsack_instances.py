@@ -14,7 +14,7 @@ for j in range(variables_length):
     right_side += value
     matrix_of_weights.append(value)
 
-right_side_of_restrictions = variables_length // 2
+right_side_of_restrictions = right_side // 2
 
 objective_weights = []
 for j in range(variables_length):

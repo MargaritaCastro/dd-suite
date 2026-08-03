@@ -3,9 +3,9 @@ BUILD_DIR := cmake-build-debug
 # ── Build & Infrastructure ────────────────────────────────────────────────────
 
 .PHONY: all build test clean \
-        main_knapsack main_independent_set main_set_cover main_socknapsack main_scheduler \
-        gurobi_knapsack gurobi_independent_set gurobi_set_cover gurobi_socknapsack gurobi_scheduler \
-        cuts_knapsack cuts_independent_set cuts_set_cover cuts_socknapsack cuts_scheduler \
+        main_knapsack main_independent_set main_set_cover main_socknapsack main_sequencing \
+        gurobi_knapsack gurobi_independent_set gurobi_set_cover gurobi_socknapsack gurobi_sequencing \
+        cuts_knapsack cuts_independent_set cuts_set_cover cuts_socknapsack cuts_sequencing \
         leaks_main leaks_cuts leaks_gurobi \
         run_knapsack run_socknapsack
 
@@ -36,8 +36,8 @@ main_set_cover: build
 main_socknapsack: build
 	@./$(BUILD_DIR)/Main DataInstances/SOCKnapsack/knapsack_n5m2o1b5_0.txt -SOCKnapsack -Exact -Max
 
-main_scheduler: build
-	@./$(BUILD_DIR)/Main DataInstances/Scheduler/Custom/scheduler_n5_s025_seed1.txt -Scheduler -Exact
+main_sequencing: build
+	@./$(BUILD_DIR)/Main DataInstances/Sequencing/Custom/sequencing_n5_s025_seed1.txt -Sequencing -Exact
 
 
 # ── Main_knapsack / Main_socknapsack (standalone scripts) ─────────────────────
@@ -63,8 +63,8 @@ gurobi_set_cover: build
 gurobi_socknapsack: build
 	@./$(BUILD_DIR)/MainGurobi DataInstances/SOCKnapsack/knapsack_n5m2o1b5_0.txt -SOCKnapsack -Verbose
 
-gurobi_scheduler: build
-	@./$(BUILD_DIR)/MainGurobi DataInstances/Scheduler/Custom/scheduler_n5_s025_seed1.txt -Scheduler -Verbose
+gurobi_sequencing: build
+	@./$(BUILD_DIR)/MainGurobi DataInstances/Sequencing/Custom/sequencing_n5_s025_seed1.txt -Sequencing -Verbose
 
 
 # ── MainCuts ──────────────────────────────────────────────────────────────────
@@ -81,8 +81,8 @@ cuts_set_cover: build
 cuts_socknapsack: build
 	@./$(BUILD_DIR)/MainCuts DataInstances/SOCKnapsack/knapsack_n5m2o1b5_0.txt -SOCKnapsack -JointFlowCuts -Verbose -Strength -Continuous
 
-cuts_scheduler: build
-	@./$(BUILD_DIR)/MainCuts DataInstances/Scheduler/Custom/scheduler_n5_s025_seed1.txt -Scheduler -TargetCuts -Verbose -Continuous
+cuts_sequencing: build
+	@./$(BUILD_DIR)/MainCuts DataInstances/Sequencing/Custom/sequencing_n5_s025_seed1.txt -Sequencing -TargetCuts -Verbose -Continuous
 
 
 # ── Memory leaks ──────────────────────────────────────────────────────────────

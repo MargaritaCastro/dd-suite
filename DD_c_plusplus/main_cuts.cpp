@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
         cout << "\t\t-Knapsack        Knapsack\n";
         cout << "\t\t-IndependentSet  Independent Set\n";
         cout << "\t\t-SOCKnapsack     SOC Knapsack\n";
-        cout << "\t\t-Scheduler       Scheduler\n";
+        cout << "\t\t-Sequencing       Sequencing\n";
         cout << "\n\tCut type (default: first valid cut for the selected problem):\n";
         cout << "\t\t-FlowCuts        Combinatorial cuts from DD\n";
         cout << "\t\t-JointFlowCuts   Dual cuts from DD\n";
@@ -61,8 +61,8 @@ int main(int argc, char* argv[]) {
             problem_class = ProblemClass::IndependentSet;
         } else if (arg == "-SOCKnapsack") {
             problem_class = ProblemClass::SOCKnapsack;
-        } else if (arg == "-Scheduler") {
-            problem_class = ProblemClass::Scheduler;
+        } else if (arg == "-Sequencing") {
+            problem_class = ProblemClass::Sequencing;
         } else if (arg == "-FlowCuts") {
             cut_type_arg = CutType::Flow;
             cut_explicit = true;

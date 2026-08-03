@@ -20,7 +20,7 @@ class CutStrengthening {
 public:
     /**
      * @brief Constructor for the CutStrengthening class.
-     * @param DD Diagrama de desición.
+     * @param DD Decision diagram.
      */
     CutStrengthening(DD<T>* DD, bool verbose = false);
 

@@ -27,7 +27,7 @@ def assertNoRaise():
     try:
         yield
     except Exception as e:
-        raise AssertionError(f"Se generó una excepción: {e}")
+        raise AssertionError(f"An exception was raised: {e}")
 
 
 class SetCoverTest(unittest.TestCase):

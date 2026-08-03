@@ -33,7 +33,7 @@ public:
     JointFlowCuts(DD<T>* DD);
 
     /**
-     * @brief Destructor de la clase JointFlowCuts
+     * @brief Destructor of the JointFlowCuts class
      */
     ~JointFlowCuts();
 

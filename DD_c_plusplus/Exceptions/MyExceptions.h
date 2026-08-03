@@ -7,7 +7,7 @@
 using namespace std;
 
 /**
- * @brief Excepción lanzada cuando no se ha establecido la función objetivo.
+ * @brief Exception thrown when the objective function has not been set.
  */
 class ObjectiveFunctionNotExecuted : public exception {
 public:
@@ -19,7 +19,7 @@ private:
 };
 
 /**
- * @brief Excepción lanzada cuando se intenta llamar a un método no implementado.
+ * @brief Exception thrown when an unimplemented method is called.
  */
 class NotImplementedError : public exception {
 public:
@@ -31,7 +31,7 @@ private:
 };
 
 /**
- * @brief Excepción lanzada cuando no se ha establecido el algoritmo para resolver el problema.
+ * @brief Exception thrown when the algorithm used to solve the problem has not been set.
  */
 class ParametersNotSetException : public exception {
 public:
@@ -43,7 +43,7 @@ private:
 };
 
 /**
- * @brief Excepción lanzada cuando no se han encontrado cortes.
+ * @brief Exception thrown when no cuts were found.
  */
 class NoCutsFound : public exception {
 public:
@@ -55,7 +55,7 @@ private:
 };
 
 /**
- * @brief Excepción lanzada cuando no se ha encontrado un levantamiento de corte.
+ * @brief Exception thrown when no cut strengthening was found.
  */
 class NoCutStrengthening : public exception {
 public:
@@ -67,7 +67,7 @@ private:
 };
 
 /**
- * @brief Excepción lanzada cuando no se ha encontrado un corte de Gomory.
+ * @brief Exception thrown when the max flow has not been executed yet.
  */
 class MaxFlowNotExecuted : public exception {
 public:
@@ -75,7 +75,7 @@ public:
     const char* what() const noexcept override;
 
 private:
-    const char* message; // Mensaje de error
+    const char* message; // Error message
 };
 
 class NoGraphFound : public exception {
@@ -83,7 +83,7 @@ public:
     NoGraphFound(const char* message = "No graph was found, please create a graph first");
     const char* what() const noexcept override;
 private:
-    const char* message; // Mensaje de error
+    const char* message; // Error message
 };
 
 class GraphAlreadyExists : public exception {

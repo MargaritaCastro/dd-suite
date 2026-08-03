@@ -351,7 +351,7 @@ where
             //println!("Compiling layer {} for variable {:?}", self.curr_depth, var);
 
             //println!(
-            //    "Nodos de capa siguiente: {:?}",
+            //    "Next-layer nodes: {:?}",
             //    self.next_l.iter().map(|(_, id)| id).collect::<Vec<_>>()
             //);
             // Did the cutoff kick in ?

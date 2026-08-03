@@ -96,7 +96,7 @@ vector<string> SOCKnapsackProblem::sort_variables(const vector<pair<string, vect
     for (int i = 0; i < (int)variables.size(); ++i)
         entries.push_back({variables[i], _pruned_linear_weights[i], _pruned_sqrt_weights[i]});
 
-    sort(entries.begin(), entries.end(), [this](const Entry& a, const Entry& b) {
+    stable_sort(entries.begin(), entries.end(), [this](const Entry& a, const Entry& b) {
         return (a.linear_w + omega * a.sqrt_w) > (b.linear_w + omega * b.sqrt_w);
     });
 

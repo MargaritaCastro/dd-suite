@@ -3,9 +3,9 @@
         run_misp run_misp_relaxed run_misp_restricted \
         run_scp run_scp_relaxed run_scp_restricted \
         run_socknapsack run_socknapsack_relaxed run_socknapsack_restricted \
-        run_scheduler run_scheduler_relaxed run_scheduler_restricted \
+        run_sequencing run_sequencing_relaxed run_sequencing_restricted \
         experiment_knapsack experiment_misp experiment_scp experiment_socknapsack \
-        experiment_scheduler
+        experiment_sequencing
 
 # Compila el proyecto
 build:
@@ -75,19 +75,19 @@ run_socknapsack_restricted:
 	cd ddo && cargo run --example compare_socknapsack -- \
 		knapsack_n5m2o1b5_0.txt results_socknapsack_quick.csv Restricted 200
 
-# ── Scheduler ─────────────────────────────────────────────────────────────────
+# ── Sequencing ─────────────────────────────────────────────────────────────────
 
-run_scheduler:
-	cd ddo && cargo run --example compare_scheduler -- \
-		scheduler_n5_s025_seed1.txt results_scheduler_quick.csv Exact 99999
+run_sequencing:
+	cd ddo && cargo run --example compare_sequencing -- \
+		sequencing_n5_s025_seed1.txt results_sequencing_quick.csv Exact 99999
 
-run_scheduler_relaxed:
-	cd ddo && cargo run --example compare_scheduler -- \
-		scheduler_n5_s025_seed1.txt results_scheduler_quick.csv Relaxed 200
+run_sequencing_relaxed:
+	cd ddo && cargo run --example compare_sequencing -- \
+		sequencing_n5_s025_seed1.txt results_sequencing_quick.csv Relaxed 200
 
-run_scheduler_restricted:
-	cd ddo && cargo run --example compare_scheduler -- \
-		scheduler_n5_s025_seed1.txt results_scheduler_quick.csv Restricted 200
+run_sequencing_restricted:
+	cd ddo && cargo run --example compare_sequencing -- \
+		sequencing_n5_s025_seed1.txt results_sequencing_quick.csv Restricted 200
 
 # ── Experimentos completos (batch) ────────────────────────────────────────────
 
@@ -103,5 +103,5 @@ experiment_scp:
 experiment_socknapsack:
 	cd ddo && bash run_socknapsack.sh
 
-experiment_scheduler:
-	cd ddo && bash run_scheduler.sh
+experiment_sequencing:
+	cd ddo && bash run_sequencing.sh

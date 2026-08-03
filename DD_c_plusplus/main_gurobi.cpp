@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
         cout << "\t\t-Knapsack = Problem class: Knapsack\n";
         cout << "\t\t-IndependentSet = Problem class: Independent Set\n";
         cout << "\t\t-SOCKnapsack = Problem class: SOC Knapsack\n";
-        cout << "\t\t-Scheduler = Problem class: Scheduler\n";
+        cout << "\t\t-Sequencing = Problem class: Sequencing\n";
         cout << "\t\t-Verbose  = Enable verbose mode\n";
         cout << "\t\t-Output_ = Output file path\n";
         cout << "\t\t-Continuous = Continuous variables; if not selected, variables will be integers\n";
@@ -42,8 +42,8 @@ int main(int argc, char* argv[]) {
             problem_class = ProblemClass::IndependentSet;
         } else if (arg == "-SOCKnapsack") {
             problem_class = ProblemClass::SOCKnapsack;
-        } else if (arg == "-Scheduler") {
-            problem_class = ProblemClass::Scheduler;
+        } else if (arg == "-Sequencing") {
+            problem_class = ProblemClass::Sequencing;
         } else if (arg == "-Verbose") {
             verbose_flag = true;
         } else if (arg.substr(0, 7) == "-Output") {

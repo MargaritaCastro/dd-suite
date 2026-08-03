@@ -1,21 +1,21 @@
 ######################################################################################################################################################
-### Basado en el paper: Manipulating MDD Relaxations for Combinatorial Optimization de David Bergman, Willem-Jan van Hoeve, and John N. Hooker     ###
+### Based on the paper: Manipulating MDD Relaxations for Combinatorial Optimization by David Bergman, Willem-Jan van Hoeve, and John N. Hooker     ###
 ######################################################################################################################################################
 
 import numpy as np
 
 def set_cover_matrix_generator(n: int, m: int, d: float, bw: int, seed: int=1) -> np.ndarray:
     """
-    Genera una matriz A de tamaño m x n para una instancia de Set Cover estructurada.
+    Generate an m x n matrix A for a structured Set Cover instance.
 
-    Parámetros:
-    - n: número de columnas (variables).
-    - m: número de filas (restricciones).
-    - d: densidad de unos por fila (proporción entre 0 y 1).
-    - bw: ancho de banda (cuántas columnas hacia adelante se puede elegir).
+    Parameters:
+    - n: number of columns (variables).
+    - m: number of rows (constraints).
+    - d: density of ones per row (a proportion between 0 and 1).
+    - bw: bandwidth (how many columns ahead can be chosen).
 
-    Retorna:
-    - A: matriz binaria de tamaño m x n.
+    Returns:
+    - A: binary matrix of size m x n.
     """
     A = np.zeros((m, n), dtype=int)
     k = int(d * n)  # number of ones per row
@@ -24,12 +24,12 @@ def set_cover_matrix_generator(n: int, m: int, d: float, bw: int, seed: int=1) -
     for i in range(m):
         start = i
         end = min(i + bw, n)  # avoid exceeding n
-        posibles = list(range(start, end))
+        candidates = list(range(start, end))
 
-        if len(posibles) == 0:
+        if len(candidates) == 0:
             continue  # there are no valid columns for this row
 
-        selection = posibles if len(posibles) <= k else np.random.choice(posibles, size=k, replace=False)
+        selection = candidates if len(candidates) <= k else np.random.choice(candidates, size=k, replace=False)
         A[i, selection] = 1
 
     return A
@@ -41,7 +41,7 @@ b_w_options = [165]
 for seed in range(1, 5):
     for n in n_options:
         for d in d_options:
-            d = 75 / n
+            d = 75 / n  # fixes the number of ones per row at k = int(d * n) = 75
             for b_w in b_w_options:
                 m = n - b_w + 1
                 custom_folder = './Standard/'
@@ -59,5 +59,5 @@ for seed in range(1, 5):
                     file.write(' '.join(map(str, objective_weights)) + '\n')
                     for i, row in enumerate(matrix_of_weight):
                         file.write(' '.join(map(str, row)))
-                        if i != len(matrix_of_weight) - 1:  
+                        if i != len(matrix_of_weight) - 1:
                             file.write('\n')

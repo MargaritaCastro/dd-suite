@@ -29,7 +29,7 @@ class FlowCuts : public AbstractCutGenerator<T> {
 public:
     /**
      * @brief Constructor for the Combinatorial Cuts class.
-     * @param DD Diagrama de desición.
+     * @param DD Decision diagram.
      */
     FlowCuts(DD<T>* DD);
 

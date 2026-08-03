@@ -271,7 +271,7 @@ fn read_instance<P: AsRef<Path>>(fname: P) -> Result<Misp, Error> {
     g.weight    = new_weight;
     g.neighbors = new_neighbors;
 
-    // Imprime índices originales (0-based) en orden de procesamiento del DD
+    // Print the original (0-based) indices in the DD processing order
     let order_1based: Vec<usize> = order.iter().map(|&i| i + 1).collect();
     println!("[RUST][MISP] Variable order ({} vars): {:?}", n, order_1based);
 
@@ -290,14 +290,14 @@ fn main() {
     let input_file = &args[1];
     let output_file = &args[2];
     let comp_type_str = &args[3];
-    let max_width: usize = args[4].parse().expect("max_width debe ser un número");
+    let max_width: usize = args[4].parse().expect("max_width must be a number");
 
     let comp_type = match comp_type_str.to_lowercase().as_str() {
         "exact" => CompilationType::Exact,
         "relaxed" => CompilationType::Relaxed,
         "restricted" => CompilationType::Restricted,
         _ => {
-            eprintln!("Tipo de compilación inválido. Usa: Exact | Relaxed | Restricted");
+            eprintln!("Invalid compilation type. Use: Exact | Relaxed | Restricted");
             std::process::exit(1);
         }
     };
@@ -353,7 +353,7 @@ fn main() {
 
     match compilation_result {
         Ok(completion) => {
-            // Imprimir el resultado en un archivo CSV
+            // Write the result to a CSV file
             use std::fs::OpenOptions;
             use std::io::Write;
 
