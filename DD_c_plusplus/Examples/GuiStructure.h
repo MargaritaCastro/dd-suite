@@ -23,7 +23,7 @@ enum class ProblemClass {
     IndependentSet,
     KnapsackState,
     SOCKnapsack,
-    Scheduler
+    Sequencing
 };
 
 enum class CutType {
@@ -34,13 +34,13 @@ enum class CutType {
 
 // Cuts supported by each problem.
 // BDD problems support Flow and JointFlow.
-// Scheduler uses an MDD, so only TargetCuts applies.
+// Sequencing uses an MDD, so only TargetCuts applies.
 inline const std::map<ProblemClass, std::vector<CutType>> VALID_CUTS = {
     {ProblemClass::Knapsack,       {CutType::Flow, CutType::JointFlow, CutType::Target}},
     {ProblemClass::IndependentSet, {CutType::Flow, CutType::JointFlow, CutType::Target}},
     {ProblemClass::SetCover,       {CutType::Flow, CutType::JointFlow, CutType::Target}},
     {ProblemClass::SOCKnapsack,    {CutType::Flow, CutType::JointFlow, CutType::Target}},
-    {ProblemClass::Scheduler,      {CutType::Target}},
+    {ProblemClass::Sequencing,      {CutType::Target}},
 };
 
 using namespace std;

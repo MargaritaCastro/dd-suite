@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
         cout << "\t\t-Knapsack = Problem class: Knapsack\n";
         cout << "\t\t-IndependentSet = Problem class: Independent Set\n";
         cout << "\t\t-SOCKnapsack = Problem class: SOC Knapsack\n";
-        cout << "\t\t-Scheduler = Problem class: Scheduler\n";
+        cout << "\t\t-Sequencing = Problem class: Sequencing\n";
         cout << "\t\t-Exact = DD Type: Exact\n";
         cout << "\t\t-Restricted = DD Type: Restricted\n";
         cout << "\t\t-RelaxPriority = DD Type: Relaxed (merge nodes by priority)\n";
@@ -56,8 +56,8 @@ int main(int argc, char* argv[]) {
             problem_class = ProblemClass::IndependentSet;
         } else if (arg == "-SOCKnapsack") {
             problem_class = ProblemClass::SOCKnapsack;
-        } else if (arg == "-Scheduler") {
-            problem_class = ProblemClass::Scheduler;
+        } else if (arg == "-Sequencing") {
+            problem_class = ProblemClass::Sequencing;
         } else if (arg == "-KnapsackState") {
             problem_class = ProblemClass::KnapsackState;
         } else if (arg == "-Exact") {

@@ -18,8 +18,7 @@ plt.rcParams.update({
 
 
 def archive_existing(folder):
-    """Crea 'folder' y su 'deprecated/' y mueve ahí las salidas ya existentes
-    antes de generar nuevas, para no acumular versiones viejas en la raíz."""
+    """Move the existing outputs of 'folder' into its 'deprecated/' subfolder."""
     deprecated = os.path.join(folder, "deprecated")
     os.makedirs(deprecated, exist_ok=True)
     for path in glob.glob(os.path.join(folder, "*")):
@@ -27,12 +26,8 @@ def archive_existing(folder):
             shutil.move(path, os.path.join(deprecated, os.path.basename(path)))
 
 def _file_datetime(path):
-    """Extrae el datetime del nombre '..._DD_MM_YYYY_HH-MM-SS.csv'.
-
-    No se puede ordenar los nombres como strings: el dia va primero, asi que
-    '27_05_2026' (27 may) ordenaria despues de '01_06_2026' (1 jun). Hay que
-    parsear la fecha real.
-    """
+    """Extract the datetime from a name '..._DD_MM_YYYY_HH-MM-SS.csv'. The names
+    cannot be sorted as strings: the day comes first, so the date must be parsed."""
     m = re.search(r"(\d{2}_\d{2}_\d{4}_\d{2}-\d{2}-\d{2})", os.path.basename(path))
     if not m:
         return datetime.fromtimestamp(os.path.getmtime(path))
@@ -43,15 +38,15 @@ def load_latest(folder, pattern, exclude_grouping=False):
     if exclude_grouping:
         files = [f for f in files if "grouping" not in os.path.basename(f).lower()]
     if not files:
-        raise FileNotFoundError(f"No se encontro '{pattern}' en {folder}")
+        raise FileNotFoundError(f"Could not find '{pattern}' in {folder}")
     path = max(files, key=_file_datetime)
     print(f"  {path}")
     return pd.read_csv(path)
 
 def load_relax(folder, lang):
-    """Carga el CSV del relax elegido en RELAX_TYPE.
+    """Load the CSV of the relax chosen in RELAX_TYPE.
 
-    - "priority" -> results_<lang>_*.csv (excluyendo los *_grouping_*)
+    - "priority" -> results_<lang>_*.csv (excluding the *_grouping_* ones)
     - "grouping" -> results_<lang>_grouping_*.csv
     """
     if RELAX_TYPE == "grouping":
@@ -61,34 +56,34 @@ def load_relax(folder, lang):
 def sync_missing_rows(df_cpp: pd.DataFrame, df_python: pd.DataFrame):
     join_keys = ['File_name', 'Max Width', 'Is Reduced', 'DD Type', 'Variables number']
 
-    # Detectar qué filas están en C++ pero no en Python
+    # Detect which rows are in C++ but not in Python
     cpp_missing_in_python = df_cpp.merge(
         df_python[join_keys], on=join_keys, how='left', indicator=True
     ).query('_merge == "left_only"').drop(columns=['_merge'])
 
-    print(f"📥 Agregando {len(cpp_missing_in_python)} filas desde C++ a Python")
+    print(f"📥 Adding {len(cpp_missing_in_python)} rows from C++ to Python")
 
-    # Completar datos faltantes para Python
+    # Fill in the missing data for Python
     cpp_missing_in_python = cpp_missing_in_python.copy()
     cpp_missing_in_python['Construction Time'] = missing_time
     cpp_missing_in_python['Timeout'] = True
 
-    # Añadir al DataFrame Python
+    # Append to the Python DataFrame
     df_python = pd.concat([df_python, cpp_missing_in_python], ignore_index=True)
 
-    # Detectar qué filas están en Python pero no en C++
+    # Detect which rows are in Python but not in C++
     python_missing_in_cpp = df_python.merge(
         df_cpp[join_keys], on=join_keys, how='left', indicator=True
     ).query('_merge == "left_only"').drop(columns=['_merge'])
 
-    print(f"📥 Agregando {len(python_missing_in_cpp)} filas desde Python a C++")
+    print(f"📥 Adding {len(python_missing_in_cpp)} rows from Python to C++")
 
-    # Completar datos faltantes para C++
+    # Fill in the missing data for C++
     python_missing_in_cpp = python_missing_in_cpp.copy()
     python_missing_in_cpp['Construction Time'] = missing_time
     python_missing_in_cpp['Timeout'] = True
 
-    # Añadir al DataFrame C++
+    # Append to the C++ DataFrame
     df_cpp = pd.concat([df_cpp, python_missing_in_cpp], ignore_index=True)
 
     return df_cpp, df_python
@@ -101,8 +96,8 @@ def scatter_plot(merged_df, title, save=False, output_path=None, group_by='Probl
     cpp = np.clip(merged_df['Construction Time_cpp'], min_val, None)
     py = np.clip(merged_df['Construction Time_python'], min_val, None)
 
-    # Se agrupan los valores de Construction Time en bins logarítmicos
-    bin_resolution = 20  # usra 10 para 0.1, 20 para 0.05, etc.
+    # Construction Time values are grouped into logarithmic bins
+    bin_resolution = 20  # use 10 for 0.1, 20 for 0.05, etc.
     merged_df['CT_cpp_rounded'] = np.floor(np.log10(cpp) * bin_resolution) / bin_resolution
     merged_df['CT_python_rounded'] = np.floor(np.log10(py) * bin_resolution) / bin_resolution
 
@@ -117,7 +112,7 @@ def scatter_plot(merged_df, title, save=False, output_path=None, group_by='Probl
 
     problem_types = sorted(grouped[group_by].unique())
 
-    # Crear mapa de marcadores y colores (colores únicos para cada tipo)
+    # Build the marker and color map (a unique color per type)
     colors = plt.colormaps['tab10']
     marker_map = {ptype: pretty_markers[i % len(pretty_markers)] for i, ptype in enumerate(problem_types)}
     color_map = {ptype: colors(i % 10) for i, ptype in enumerate(problem_types)}
@@ -138,22 +133,22 @@ def scatter_plot(merged_df, title, save=False, output_path=None, group_by='Probl
             linewidths=0.5
         )
 
-    # Escalas logarítmicas
+    # Logarithmic scales
     plt.xscale('log')
     plt.yscale('log')
 
-    # Límites de ejes (ajustados a log)
+    # Axis limits (adjusted to the log scale)
     plt.xlim(1e-3, missing_time)
     plt.ylim(1e-3, missing_time)
 
-    # Línea de referencia (diagonal ideal)
+    # Reference line (ideal diagonal)
     plt.plot([1e-3, missing_time-10], [1e-3, missing_time-10], linestyle='--', color='gray', label='c++ = python')
 
-    # Etiquetas (en inglés, sin título en la imagen)
+    # Labels (the image carries no title)
     plt.xlabel('C++ time (s, log)')
     plt.ylabel('Python time (s, log)')
 
-    # Leyenda
+    # Legend
     legend = plt.legend(loc='upper left')          
     for handle in legend.legend_handles:           
         if hasattr(handle, "set_sizes"):
@@ -168,9 +163,9 @@ def scatter_plot(merged_df, title, save=False, output_path=None, group_by='Probl
     else:
         plt.show()
 
-### Parámetros globales que se utilizan
+### Global parameters used below
 
-# Relax a graficar: "priority" o "grouping". Por ahora se usa priority.
+# Relax to plot: "priority" or "grouping". For now priority is used.
 RELAX_TYPE = "priority"
 
 missing_time = 310
@@ -178,7 +173,7 @@ min_variables_default = 100
 # SOC Knapsack instances are inherently small (max ~36 vars); override the default threshold
 min_variables_by_problem = {
     'SOC Knapsack': 0,
-    'Scheduler': 0
+    'Sequencing': 0
 }
 # Problem types to exclude from all plots (use normalized names, e.g. 'SOC Knapsack', 'Independent Set')
 EXCLUDED_PROBLEM_TYPES = ['SOC Knapsack']
@@ -192,15 +187,20 @@ file_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
 try:
     # ---------------------------------------------------------------------------
-    # 1) Cargar CSV y sincronizar filas faltantes
+    # 1) Load the CSVs and sync the missing rows
     # ---------------------------------------------------------------------------
-    print(f"🔧 Relax seleccionado: {RELAX_TYPE}")
+    print(f"🔧 Selected relax: {RELAX_TYPE}")
     df_cpp_without_timeout    = load_relax(cpp_folder,    'cpp')
     df_python_without_timeout = load_relax(python_folder, 'python')
 
-    dd_types = df_cpp_without_timeout['DD Type'].unique() # los tipos presentes
+    # Legacy alias: without it the old "Scheduler" rows miss the 'Sequencing' key of
+    # min_variables_by_problem and get filtered out by the 100-variable threshold.
+    for _df in (df_cpp_without_timeout, df_python_without_timeout):
+        _df['Problem type'] = _df['Problem type'].replace({'Scheduler': 'Sequencing'})
 
-    # Añadir filas faltantes entre C++ y Python
+    dd_types = df_cpp_without_timeout['DD Type'].unique()   # the DD types present in the CSV
+
+    # Add the rows missing between C++ and Python
     df_cpp, df_python = sync_missing_rows(df_cpp_without_timeout, df_python_without_timeout)
 
     if EXCLUDED_PROBLEM_TYPES:
@@ -208,7 +208,7 @@ try:
             df.drop(df[df['Problem type'].isin(EXCLUDED_PROBLEM_TYPES)].index, inplace=True)
 
     # ---------------------------------------------------------------------------
-    # 2) Filtrado inicial por tamaño de instancia (umbral por tipo de problema)
+    # 2) Initial filtering by instance size (threshold per problem type)
     # ---------------------------------------------------------------------------
     def filter_min_vars(df):
         thresholds = df['Problem type'].map(
@@ -221,11 +221,11 @@ try:
 
 
     if df_cpp.empty or df_python.empty:
-        raise ValueError("❌ No quedan datos tras filtrar por Variables number >= 100")
+        raise ValueError("❌ No data left after filtering by Variables number >= 100")
 
 
     # ---------------------------------------------------------------------------
-    # 3) Merge único (ya filtrado)
+    # 3) Single merge (already filtered)
     # ---------------------------------------------------------------------------
     merged_df = pd.merge(
         df_cpp[['File_name', 'Construction Time', 'Max Width', 'Is Reduced',
@@ -237,37 +237,37 @@ try:
     )
 
     if merged_df.empty:
-        raise ValueError("❌ El merge resultó vacío; revisa los filtros y las claves de unión.")
+        raise ValueError("❌ The merge came out empty; check the filters and the join keys.")
 
-    # Asegurar columna unificada de tipo de problema
+    # Make sure the unified problem-type column is present
     merged_df['Problem type'] = merged_df['Problem type_cpp']
     merged_df = merged_df.drop(columns=['Problem type_cpp', 'Problem type_python'])
 
     # ---------------------------------------------------------------------------
-    # 4) Graficar por cada DD Type (3 plots principales)
+    # 4) Plot each DD Type (3 main plots)
     # ---------------------------------------------------------------------------
-    # Nombre amigable para los titulos de los plots (no afecta los nombres de archivo)
+    # Friendly name for the plot titles (does not affect the file names)
     DD_LABEL = {"RelaxPriority": "Relax", "RelaxGrouping": "Relax (grouping)"}
 
     for dd_type in dd_types:
         sub_df = merged_df[merged_df['DD Type'] == dd_type].copy()
 
         if sub_df.empty:
-            print(f"⏭️  No hay datos para DD Type: {dd_type} con Variables number >= {min_variables_default}")
+            print(f"⏭️  No data for DD Type: {dd_type} with Variables number >= {min_variables_default}")
             continue
 
         output_path = f'{plots_folder}/construction_time_{dd_type.lower().replace(" ", "_")}_{file_timestamp}.png'
-        print(f"📊 Generando gráfico para DD Type: {dd_type}")
+        print(f"📊 Generating plot for DD Type: {dd_type}")
 
         scatter_plot(
             sub_df,
-            title=f'Comparación de Construction Time - DD Type: {DD_LABEL.get(dd_type, dd_type)}',
+            title=f'Construction Time comparison - DD Type: {DD_LABEL.get(dd_type, dd_type)}',
             save=True,
             output_path=output_path
         )
 
     # ---------------------------------------------------------------------------
-    # 5) Graficar para Relaxed y Restricted por width (6 plots secundarios)
+    # 5) Plot Relaxed and Restricted by width (6 secondary plots)
     # ---------------------------------------------------------------------------
     problem_types = df_cpp['Problem type'].unique()
 
@@ -282,22 +282,22 @@ try:
             ].copy()  
 
             if sub_df.empty:
-                print(f"⏭️  No hay datos para DD Type: {dd_type} y Problem type: {problem_type}")
+                print(f"⏭️  No data for DD Type: {dd_type} and Problem type: {problem_type}")
                 continue
 
             out_name = f"construction_time_{dd_type.lower().replace(' ', '_')}_{problem_type.lower().replace(' ', '_')}_{file_timestamp}.png"
             output_path = f"{plots_folder}/{out_name}"
 
-            print(f"📊 Generando gráfico para DD Type: {dd_type} y Problem type: {problem_type}")
+            print(f"📊 Generating plot for DD Type: {dd_type} and Problem type: {problem_type}")
 
             scatter_plot(
                 sub_df,
-                title=f"Comparación de Construction Time\nDD Type: {DD_LABEL.get(dd_type, dd_type)} • Problem type: {problem_type}",
+                title=f"Construction Time comparison\nDD Type: {DD_LABEL.get(dd_type, dd_type)} • Problem type: {problem_type}",
                 save=True,
                 output_path=output_path,
-                group_by='Max Width'          # ← la leyenda mostrará los distintos widths
+                group_by='Max Width'          # ← the legend will show the different widths
             )
 
 except Exception as e:
-    print(f"Error leyendo: {e}")
+    print(f"Error reading: {e}")
 

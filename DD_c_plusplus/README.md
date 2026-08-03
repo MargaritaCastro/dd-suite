@@ -42,21 +42,21 @@ make main_knapsack           # Knapsack
 make main_independent_set    # Independent Set
 make main_set_cover          # Set Cover
 make main_socknapsack        # SOCKnapsack
-make main_scheduler          # Scheduler
+make main_sequencing          # Sequencing
 
 # Run main_gurobi (Gurobi baseline)
 make gurobi_knapsack
 make gurobi_independent_set
 make gurobi_set_cover
 make gurobi_socknapsack
-make gurobi_scheduler
+make gurobi_sequencing
 
 # Run main_cuts (DD + Gurobi with cuts)
 make cuts_knapsack
 make cuts_independent_set
 make cuts_set_cover
 make cuts_socknapsack
-make cuts_scheduler
+make cuts_sequencing
 
 # Memory leak checks (macOS leaks tool)
 make leaks_main
@@ -97,6 +97,8 @@ Creates a decision diagram (Exact, Restricted, or Relaxed), optionally reduces i
 | `-SetCover`       | Problem class: Set Cover                  |
 | `-Knapsack`       | Problem class: Knapsack                   |
 | `-IndependentSet` | Problem class: Independent Set            |
+| `-SOCKnapsack`    | Problem class: SOC Knapsack               |
+| `-Sequencing`     | Problem class: Sequencing                 |
 | `-Exact`          | DD type: Exact                            |
 | `-Restricted`     | DD type: Restricted                       |
 | `-RelaxPriority`  | DD type: Relaxed (merge nodes by priority)              |
@@ -107,7 +109,10 @@ Creates a decision diagram (Exact, Restricted, or Relaxed), optionally reduces i
 | `-Export`         | Export the diagram as a `.gml` file     |
 | `-Max`            | Compute longest path                      |
 | `-Min`            | Compute shortest path                     |
-| `-output_PATH`    | Write statistics to output file PATH      |
+| `-NoSort`         | Disable the variable-ordering heuristic   |
+| `-Output_PATH`    | Write statistics to output file PATH      |
+
+Flags are matched by exact string, so the capitalisation above matters.
 
 #### Example
 
@@ -134,7 +139,7 @@ Min/Max?: min
 
 * The program automatically determines the current directory and appends it to the input and output file paths to ensure all necessary files are correctly located.
 * Default values are used for unspecified parameters (e.g., decision diagram type defaults to Exact, and maximum width defaults to a large integer value).
-* If the `-output_`flag is omitted, no output file will be generated.
+* If the `-Output_` flag is omitted, no output file will be generated.
 
 ---
 
@@ -149,9 +154,11 @@ With this executable, you can create Gurobi optimization models for any of the t
 | `-SetCover`       | Problem class: Set Cover                               |
 | `-Knapsack`       | Problem class: Knapsack                                |
 | `-IndependentSet` | Problem class: Independent Set                         |
+| `-SOCKnapsack`    | Problem class: SOC Knapsack                            |
+| `-Sequencing`     | Problem class: Sequencing                              |
 | `-Verbose`        | Enable verbose output                                  |
 | `-Continuous`     | Use continuous relaxation instead of integer variables |
-| `-output_PATH`    | Write statistics to output file PATH                   |
+| `-Output_PATH`    | Write statistics to output file PATH                   |
 
 #### Example
 
@@ -176,7 +183,7 @@ Continuous: Yes
 
 * The program automatically determines the current directory and appends it to the input and output file paths to ensure all necessary files are correctly located.
 * Default behavior uses integer variables unless the `-Continuous` flag is provided.
-* If the `-output_`flag is omitted, no output file will be generated.
+* If the `-Output_` flag is omitted, no output file will be generated.
 
 ---
 
@@ -191,13 +198,18 @@ In this executable, an integer solution (integer variable values) can be obtaine
 | `-SetCover`       | Problem class: Set Cover                               |
 | `-Knapsack`       | Problem class: Knapsack                                |
 | `-IndependentSet` | Problem class: Independent Set                         |
+| `-SOCKnapsack`    | Problem class: SOC Knapsack                            |
+| `-Sequencing`     | Problem class: Sequencing                              |
+| `-Exact` / `-Restricted` / `-RelaxPriority` / `-RelaxGrouping` | DD type used to generate the cuts |
+| `-Width_N`        | Maximum width N of the cut-generating DD               |
 | `-Verbose`        | Enable verbose output                                  |
 | `-Continuous`     | Use continuous relaxation instead of integer variables |
 | `-FlowCuts`       | Use combinatorial flow cuts                            |
 | `-JointFlowCuts`  | Use joint (dual) flow cuts                             |
 | `-TargetCuts`     | Use target cuts from relaxed MDD (all problems)        |
-| `-Strength`       | Apply cut strengthening after generation               |
-| `-output_PATH`    | Write statistics to output file PATH                   |
+| `-CutStrengthening` | Apply cut strengthening after generation             |
+| `-NoSort`         | Disable the variable-ordering heuristic                |
+| `-Output_PATH`    | Write statistics to output file PATH                   |
 
 #### Example
 
@@ -208,7 +220,7 @@ In this executable, an integer solution (integer variable values) can be obtaine
 #### Example Execution
 
 ```
-./main_cuts example_file.txt -Knapsack -Continuous -FlowCuts -Verbose -output_result.txt
+./MainCuts example_file.txt -Knapsack -Continuous -FlowCuts -Verbose -Output_result.txt
 ```
 
 #### Output Example
@@ -230,9 +242,9 @@ Verbose: Yes
 #### Notes
 
 * The program automatically determines the current directory and appends it to the input and output file paths to ensure all necessary files are correctly located.
-* If the `-output_`flag is omitted, no output file will be generated.
+* If the `-Output_` flag is omitted, no output file will be generated.
 * Default behavior uses integer variables unless the `-Continuous` flag is provided.
-* Default behavior uses Flow Cuts unless de `-JointFlow` flag is provided
+* Default behavior uses Flow Cuts unless the `-JointFlowCuts` or `-TargetCuts` flag is provided
 
 ---
 
@@ -357,7 +369,7 @@ Three cut generators are available, all inheriting from `AbstractCutGenerator<T>
 
 - **FlowCuts**: combinatorial cuts derived from a min-cut on the DD. Requires a binary DD (BDD).
 - **JointFlowCuts**: dual flow cuts, typically tighter than FlowCuts. Requires a binary DD (BDD).
-- **TargetCut**: target cuts from a relaxed MDD (Tjandraatmadja & van Hoeve, 2019). Works for any MDD, including problems with multi-valued domains (e.g., Scheduler). Computes the geometric center ω of conv(S) and solves an LP to separate x̄ from the set.
+- **TargetCut**: target cuts from a relaxed MDD (Tjandraatmadja & van Hoeve, 2019). Works for any MDD, including problems with multi-valued domains (e.g., Sequencing). Computes the geometric center ω of conv(S) and solves an LP to separate x̄ from the set.
 
 To use any of them, instantiate the class with the `dd_instance`, then call `generate_cut(x_values)`. The method returns `true` if a cut was found. Retrieve it with `get_cut()` (returns `pair<vector<double>, double>`). For `FlowCuts`, `get_min_cut()` returns the minimum cut value.
 

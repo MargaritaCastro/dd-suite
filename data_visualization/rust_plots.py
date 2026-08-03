@@ -18,8 +18,7 @@ plt.rcParams.update({
 
 
 def archive_existing(folder):
-    """Crea 'folder' y su 'deprecated/' y mueve ahí las salidas ya existentes
-    antes de generar nuevas, para no acumular versiones viejas en la raíz."""
+    """Move the existing outputs of 'folder' into its 'deprecated/' subfolder."""
     deprecated = os.path.join(folder, "deprecated")
     os.makedirs(deprecated, exist_ok=True)
     for path in glob.glob(os.path.join(folder, "*")):
@@ -27,12 +26,8 @@ def archive_existing(folder):
             shutil.move(path, os.path.join(deprecated, os.path.basename(path)))
 
 def _file_datetime(path):
-    """Extrae el datetime del nombre '..._DD_MM_YYYY_HH-MM-SS.csv'.
-
-    No se puede ordenar los nombres como strings: el dia va primero, asi que
-    '27_05_2026' (27 may) ordenaria despues de '01_06_2026' (1 jun). Hay que
-    parsear la fecha real.
-    """
+    """Extract the datetime from a name '..._DD_MM_YYYY_HH-MM-SS.csv'. The names
+    cannot be sorted as strings: the day comes first, so the date must be parsed."""
     m = re.search(r"(\d{2}_\d{2}_\d{4}_\d{2}-\d{2}-\d{2})", os.path.basename(path))
     if not m:
         return datetime.fromtimestamp(os.path.getmtime(path))
@@ -43,16 +38,16 @@ def load_latest(folder, pattern, exclude_grouping=False):
     if exclude_grouping:
         files = [f for f in files if "grouping" not in os.path.basename(f).lower()]
     if not files:
-        raise FileNotFoundError(f"No se encontro '{pattern}' en {folder}")
+        raise FileNotFoundError(f"Could not find '{pattern}' in {folder}")
     path = max(files, key=_file_datetime)
     print(f"  {path}")
     return pd.read_csv(path)
 
 def load_relax(folder, lang):
-    """Carga el CSV del relax elegido en RELAX_TYPE (solo C++/Python; Rust no
-    implementa grouping y siempre usa su único CSV).
+    """Load the CSV of the relax chosen in RELAX_TYPE (C++/Python only; Rust does
+    not implement grouping and always uses its single CSV).
 
-    - "priority" -> results_<lang>_*.csv (excluyendo los *_grouping_*)
+    - "priority" -> results_<lang>_*.csv (excluding the *_grouping_* ones)
     - "grouping" -> results_<lang>_grouping_*.csv
     """
     if RELAX_TYPE == "grouping":
@@ -60,15 +55,10 @@ def load_relax(folder, lang):
     return load_latest(folder, f'results_{lang}_*.csv', exclude_grouping=True)
 
 def standardize_relax(df):
-    """Deja un único relax (el elegido en RELAX_TYPE) y lo renombra a 'Relaxed'
-    para que calce con Rust, que solo implementa un relax.
+    """Drop the relax not chosen in RELAX_TYPE and rename the other to 'Relaxed'.
 
-    Los CSV de C++/Python traen dos DD Type de relax ('RelaxPriority' y
-    'RelaxGrouping') en un mismo archivo. Rust solo tiene 'Relaxed', así que sin
-    estandarizar el merge con Rust descarta todas las filas de relax (ningún
-    'RelaxPriority'/'RelaxGrouping' calza con 'Relaxed') y además se graficarían
-    los dos relax. Aquí descartamos el relax no elegido y renombramos el otro a
-    'Relaxed'."""
+    Rust only has 'Relaxed', so without this the merge would discard every relax row
+    and both relaxations would be plotted."""
     keep = RELAX_DD_TYPE[RELAX_TYPE]
     other = {'RelaxPriority', 'RelaxGrouping'} - {keep}
     df = df[~df['DD Type'].isin(other)].copy()
@@ -77,7 +67,7 @@ def standardize_relax(df):
 
 def scatter_rust_vs_other(merged_df, other_language: str, save=False, output_path=None, group_by='Problem type'):
     real_counts = merged_df[group_by].value_counts().to_dict()
-    assert other_language in ['Python', 'C++'], "Solo se permite 'Python' o 'C++'"
+    assert other_language in ['Python', 'C++'], "Only 'Python' or 'C++' is allowed"
     
     rust_col = 'Construction Time_rust'
     other_col = f"Construction Time_{'python' if other_language == 'Python' else 'cpp'}"
@@ -120,18 +110,18 @@ def scatter_rust_vs_other(merged_df, other_language: str, save=False, output_pat
             linewidths=0.5
         )
 
-    # Escalas logarítmicas
+    # Logarithmic scales
     plt.xscale('log')
     plt.yscale('log')
 
-    # Límites de ejes (ajustados a log)
+    # Axis limits (adjusted to the log scale)
     plt.xlim(1e-3, missing_time)
     plt.ylim(1e-3, missing_time)
 
-    # Línea de referencia (diagonal ideal)
+    # Reference line (ideal diagonal)
     plt.plot([1e-3, missing_time-10], [1e-3, missing_time-10], linestyle='--', color='gray', label=f'RUST = {other_language}')
 
-    # Etiquetas (en inglés, sin título en la imagen)
+    # Labels (the image carries no title)
     plt.xlabel(f'{other_language} time (s, log)')
     plt.ylabel('Rust time (s, log)')
 
@@ -147,21 +137,21 @@ def scatter_rust_vs_other(merged_df, other_language: str, save=False, output_pat
 
     if save:
         plt.savefig(output_path)
-        print(f"📊 Guardado en: {output_path}")
+        print(f"📊 Saved to: {output_path}")
     else:
         plt.show()
 
 def sync_missing_rows(df_1: pd.DataFrame, df_2: pd.DataFrame, df_1_name:str, df_2_name:str) -> tuple[pd.DataFrame, pd.DataFrame]:
     merge_cols = ['File_name', 'Max Width', 'Is Reduced', 'DD Type']
 
-    # Dado que Rust no puede reducir, se elimina la columna 'Is Reduced' de los merges
+    # Since Rust cannot reduce, the 'Is Reduced' column is dropped from the merges
     if df_1_name == "Rust" or df_2_name == "Rust":
         merge_cols.pop(merge_cols.index('Is Reduced'))
     base_cols = ['File_name', 'Construction Time', 'Max Width', 'Is Reduced',
                  'DD Type', 'Variables number', 'Problem type', 'Language']
 
     def get_missing_rows(source_df, target_df, language_name):
-        # Encuentra las filas en source_df que no están en target_df según merge_cols
+        # Find the rows of source_df that are not in target_df according to merge_cols
         merged = source_df.merge(target_df[merge_cols], on=merge_cols, how='left', indicator=True)
         missing = merged[merged['_merge'] == 'left_only']
         missing_rows = source_df.merge(missing[merge_cols], on=merge_cols, how='inner')
@@ -172,12 +162,12 @@ def sync_missing_rows(df_1: pd.DataFrame, df_2: pd.DataFrame, df_1_name:str, df_
 
     # De df_1 a df_2
     missing_from_2 = get_missing_rows(df_1, df_2, df_1_name)
-    print(f"🔍 Se encontraron {len(missing_from_2)} filas de {df_1_name} que faltan en {df_2_name}")
+    print(f"🔍 Found {len(missing_from_2)} rows of {df_1_name} missing from {df_2_name}")
     df_2_updated = pd.concat([df_2, missing_from_2], ignore_index=True)
 
     # De df_2 a df_1
     missing_from_1 = get_missing_rows(df_2, df_1, df_2_name)
-    print(f"🔍 Se encontraron {len(missing_from_1)} filas de {df_2_name} que faltan en {df_1_name}")
+    print(f"🔍 Found {len(missing_from_1)} rows of {df_2_name} missing from {df_1_name}")
     df_1_updated = pd.concat([df_1, missing_from_1], ignore_index=True)
 
     return df_1_updated, df_2_updated
@@ -220,7 +210,7 @@ def merge_cpp_python_rust(df_cpp, df_python, df_rust) -> pd.DataFrame:
         suffixes=('_cpp', '_python')
     )
 
-    # Merge con Rust (inner join para solo los que existen en Rust)
+    # Merge with Rust (inner join to keep only what exists in Rust)
     merged = pd.merge(
         merged,
         df_rust[base_cols],
@@ -228,18 +218,18 @@ def merge_cpp_python_rust(df_cpp, df_python, df_rust) -> pd.DataFrame:
         how='inner'
     ).rename(columns={'Construction Time': 'Construction Time_rust', 'Problem type': 'Problem type_rust'})
 
-    # Usar solo una columna 'Problem type' desde Rust o C++
+    # Use a single 'Problem type' column, from Rust or C++
     merged['Problem type'] = merged['Problem type_rust']
 
     return merged
 
-### Parámetros globales que se utilizan
+### Global parameters used below
 
-# Relax a graficar para C++/Python: "priority" o "grouping". Por ahora se usa
-# priority. Rust no implementa grouping, así que siempre usa su CSV único.
+# Relax to plot for C++/Python: "priority" or "grouping". For now priority is used.
+# Rust does not implement grouping, so it always uses its single CSV.
 RELAX_TYPE = "priority"
-# DD Type en los CSV de C++/Python según el relax elegido. Se renombra a
-# 'Relaxed' (ver standardize_relax) para que calce con el único relax de Rust.
+# DD Type in the C++/Python CSVs according to the chosen relax. It is renamed to
+# 'Relaxed' (see standardize_relax) so that it matches the single relax of Rust.
 RELAX_DD_TYPE = {"priority": "RelaxPriority", "grouping": "RelaxGrouping"}
 
 missing_time = 310
@@ -247,7 +237,7 @@ min_variables_default = 100
 # SOC Knapsack instances are inherently small (max ~36 vars); override the default threshold
 min_variables_by_problem = {
     'SOC Knapsack': 0,
-    'Scheduler': 0,
+    'Sequencing': 0,
 }
 # Problem types to exclude from all plots (use normalized names, e.g. 'SOC Knapsack', 'Independent Set')
 EXCLUDED_PROBLEM_TYPES = ['SOC Knapsack']
@@ -261,7 +251,7 @@ python_folder = os.path.join(csv_folder, 'python')
 rust_folder   = os.path.join(csv_folder, 'rust')
 
 try:
-    print(f"🔧 Relax seleccionado (C++/Python): {RELAX_TYPE}")
+    print(f"🔧 Selected relax (C++/Python): {RELAX_TYPE}")
     df_cpp    = load_relax(cpp_folder,    'cpp')
     df_python = load_relax(python_folder, 'python')
     df_rust   = load_latest(rust_folder,   'results_rust_*.csv')
@@ -272,6 +262,9 @@ try:
         "IndependentSet": "Independent Set",
         "Set Covering": "Set Cover",
         "SOCKnapsack": "SOC Knapsack",
+        # Legacy alias: CSVs from runs predating the rename carry
+        # "Scheduler" in the Problem type column.
+        "Scheduler": "Sequencing",
     }
     for df in [df_cpp, df_python, df_rust]:
         df['Problem type'] = df['Problem type'].replace(name_map)
@@ -295,7 +288,7 @@ try:
     df_python["Language"] = "Python"
     df_rust["Language"] = "Rust"
 
-    # Deja un solo relax y lo renombra a 'Relaxed' para que calce con Rust.
+    # Keep a single relax and rename it to 'Relaxed' so that it matches Rust.
     df_cpp    = standardize_relax(df_cpp)
     df_python = standardize_relax(df_python)
 
@@ -310,10 +303,10 @@ try:
         ]
 
         if filtered_df.empty:
-            print(f"⏭️ No hay datos para DD Type: {dd_type}")
+            print(f"⏭️ No data for DD Type: {dd_type}")
             continue
 
-        #Asegurar la columna para graficar por tipo de problema
+        # Make sure the column used to plot by problem type is present
         filtered_df = filtered_df.copy()
         filtered_df['Problem type'] = filtered_df.get('Problem type_rust', 'Unknown')
         filtered_df = filtered_df.drop(columns=[
@@ -337,5 +330,5 @@ try:
 
 
 except Exception as e:
-    print(f"Error leyendo: {e}")
+    print(f"Error reading: {e}")
 

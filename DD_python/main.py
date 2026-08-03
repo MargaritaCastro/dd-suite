@@ -15,7 +15,7 @@ def main(argv):
         print("\t\t-Knapsack = Problem class: KnapsackInstance")
         print("\t\t-IndependentSet = Problem class: Independent Set")
         print("\t\t-SOCKnapsack = Problem class: SOC Knapsack")
-        print("\t\t-Scheduler = Problem class: Scheduler (single-machine)")
+        print("\t\t-Sequencing = Problem class: Sequencing (single-machine)")
         print("\t\t-Exact = DD Type: Exact")
         print("\t\t-Restricted = DD Type: Restricted")
         print("\t\t-RelaxPriority = DD Type: Relaxed (merge nodes by priority)")
@@ -54,8 +54,8 @@ def main(argv):
             problem_class = ProblemClass.INDEPENDENT_SET
         elif arg == "-SOCKnapsack":
             problem_class = ProblemClass.SOC_KNAPSACK
-        elif arg == "-Scheduler":
-            problem_class = ProblemClass.SCHEDULER
+        elif arg == "-Sequencing":
+            problem_class = ProblemClass.SEQUENCING
         elif arg == "-Exact":
             dd_type = DDType.EXACT
         elif arg == "-Restricted":
@@ -104,7 +104,7 @@ def main(argv):
         else:
             output_path = os.path.join(source_directory, output_name)
 
-    # Mostrar la configuración
+    # Show the configuration
     print("Running with the following parameters:")
     print(f"Input File: {filename}")
     print(f"Output File: {output_name}")

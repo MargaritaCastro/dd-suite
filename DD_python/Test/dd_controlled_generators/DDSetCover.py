@@ -15,7 +15,7 @@ def get_exact_dd_set_cover():
     graph = Graph(node_0)
 
 
-    # Capa x_1
+    # Layer x_1
     graph.add_new_layer()
     node_1 = Node('1', bitarray('111'))
     arc_0_1 = Arc(node_0, node_1, 0)
@@ -29,7 +29,7 @@ def get_exact_dd_set_cover():
     node_2.in_arcs.append(arc_0_2)
     graph.add_node(node_2)
 
-    # Capa x_2
+    # Layer x_2
     graph.add_new_layer()
     node_3 = Node('3', bitarray('111'))
     arc_1_3 = Arc(node_1, node_3, 0)
@@ -55,7 +55,7 @@ def get_exact_dd_set_cover():
     node_6.in_arcs.append(arc_2_6)
     graph.add_node(node_6)
 
-    # Capa x_3
+    # Layer x_3
     graph.add_new_layer()
     node_7 = Node('7', bitarray('011'))
     arc_3_7 = Arc(node_3, node_7, 1)
@@ -90,7 +90,7 @@ def get_exact_dd_set_cover():
     node_10.in_arcs.append(arc_6_10_op2)
     graph.add_node(node_10)
 
-    # Capa x_4
+    # Layer x_4
     graph.add_new_layer()
 
     node_11 = Node('11', bitarray('011'))
@@ -129,7 +129,7 @@ def get_exact_dd_set_cover():
     node_14.in_arcs.append(arc_9_14)
     graph.add_node(node_14)
 
-    # Capa x_5
+    # Layer x_5
     graph.add_new_layer()
     node_15 = Node('15', bitarray('001'))
     arc_11_15 = Arc(node_11, node_15, 1)
@@ -155,7 +155,7 @@ def get_exact_dd_set_cover():
     node_16.in_arcs.append(arc_13_16)
     graph.add_node(node_16)
 
-    # Capa x_6
+    # Layer x_6
     graph.add_new_layer()
     node_17 = Node('17', bitarray('000'))
     arc_15_17 = Arc(node_15, node_17, 1)
@@ -174,7 +174,7 @@ def get_relaxed_dd_set_cover():
     node_0 = Node('0', bitarray('111'))
     graph = Graph(node_0)
 
-    # Capa x_1
+    # Layer x_1
     graph.add_new_layer()
     node_1 = Node('1', bitarray('111'))
     arc_0_1 = Arc(node_0, node_1, 0)
@@ -188,7 +188,7 @@ def get_relaxed_dd_set_cover():
     node_2.in_arcs.append(arc_0_2)
     graph.add_node(node_2)
 
-    # Capa x_2
+    # Layer x_2
     graph.add_new_layer()
     node_3 = Node('3', bitarray('010'))
     arc_1_3_op1 = Arc(node_1, node_3, 0)
@@ -211,7 +211,7 @@ def get_relaxed_dd_set_cover():
     node_5.in_arcs.append(arc_2_5)
     graph.add_node(node_5)
 
-    # Capa x_3
+    # Layer x_3
     graph.add_new_layer()
     node_6 = Node('6', bitarray('010'))
     arc_3_6_op1 = Arc(node_3, node_6, 0)
@@ -240,7 +240,7 @@ def get_relaxed_dd_set_cover():
     node_8.in_arcs.append(arc_5_8_op2)
     graph.add_node(node_8)
 
-    # Capa x_4
+    # Layer x_4
     graph.add_new_layer()
     node_9 = Node('9', bitarray('010'))
     arc_6_9 = Arc(node_6, node_9, 0)
@@ -269,7 +269,7 @@ def get_relaxed_dd_set_cover():
     node_11.in_arcs.append(arc_7_11)
     graph.add_node(node_11)
 
-    # Capa x_5
+    # Layer x_5
     graph.add_new_layer()
     node_12 = Node('12', bitarray('000'))
     arc_9_12 = Arc(node_9, node_12, 1)
@@ -292,7 +292,7 @@ def get_relaxed_dd_set_cover():
     node_13.in_arcs.append(arc_11_13_op2)
     graph.add_node(node_13)
 
-    # capa x_6
+    # Layer x_6
     graph.add_new_layer()
     node_14 = Node('14', bitarray('000'))
     arc_12_14_op1 = Arc(node_12, node_14, 0)
@@ -311,7 +311,7 @@ def get_restricted_dd_set_cover():
     node_0 = Node('0', bitarray('111'))
     graph = Graph(node_0)
 
-    # Capa x_1
+    # Layer x_1
     graph.add_new_layer()
     node_1 = Node('1', bitarray('111'))
     arc_0_1 = Arc(node_0, node_1, 0)
@@ -325,7 +325,7 @@ def get_restricted_dd_set_cover():
     node_2.in_arcs.append(arc_0_2)
     graph.add_node(node_2)
 
-    # Capa x_2
+    # Layer x_2
     graph.add_new_layer()
     node_3 = Node('3', bitarray('010'))
     arc_1_3 = Arc(node_1, node_3, 1)
@@ -345,7 +345,7 @@ def get_restricted_dd_set_cover():
     node_5.in_arcs.append(arc_2_5)
     graph.add_node(node_5)
 
-    # Capa x_3
+    # Layer x_3
     graph.add_new_layer()
     node_6 = Node('6', bitarray('010'))
     arc_3_6_op1 = Arc(node_3, node_6, 0)
@@ -374,7 +374,7 @@ def get_restricted_dd_set_cover():
     node_8.in_arcs.append(arc_5_8_op2)
     graph.add_node(node_8)
 
-    # Capa x_4
+    # Layer x_4
     graph.add_new_layer()
     node_9 = Node('9', bitarray('010'))
     arc_6_9 = Arc(node_6, node_9, 0)
@@ -403,7 +403,7 @@ def get_restricted_dd_set_cover():
     node_11.in_arcs.append(arc_7_11)
     graph.add_node(node_11)
 
-    # Capa x_5
+    # Layer x_5
     graph.add_new_layer()
     node_12 = Node('12', bitarray('000'))
     arc_9_12 = Arc(node_9, node_12, 1)
@@ -426,7 +426,7 @@ def get_restricted_dd_set_cover():
     node_13.in_arcs.append(arc_11_13_op2)
     graph.add_node(node_13)
 
-    # capa x_6
+    # Layer x_6
     graph.add_new_layer()
     node_14 = Node('14', bitarray('000'))
     arc_12_14_op1 = Arc(node_12, node_14, 0)

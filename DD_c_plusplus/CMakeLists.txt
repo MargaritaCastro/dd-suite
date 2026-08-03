@@ -27,7 +27,7 @@ if(NOT DEFINED GUROBI_HOME AND DEFINED ENV{GUROBI_HOME})
     message(STATUS "Gurobi from environment: ${GUROBI_HOME}")
 endif()
 
-# 2. Auto-detect si aún no está definido
+# 2. Auto-detect if it is not defined yet
 if(NOT DEFINED GUROBI_HOME)
 
     file(GLOB GUROBI_CANDIDATES
@@ -53,7 +53,7 @@ else()
     message(STATUS "Gurobi home (user-provided): ${GUROBI_HOME}")
 endif()
 
-# 3. Validación (MUY importante)
+# 3. Validation (VERY important)
 if(NOT EXISTS "${GUROBI_HOME}/include/gurobi_c++.h")
     message(FATAL_ERROR "Invalid GUROBI_HOME: ${GUROBI_HOME}")
 endif()
@@ -109,13 +109,13 @@ set(PROBLEMS_SOURCE
         Examples/SOCKnapsackInstance/SOCKnapsackInstance.cpp
         Examples/SOCKnapsackInstance/SOCKnapsackProblem.h
         Examples/SOCKnapsackInstance/SOCKnapsackProblem.cpp
-        Examples/SchedulerInstance/SchedulerState.h
-        Examples/SchedulerInstance/SchedulerInstance.h
-        Examples/SchedulerInstance/SchedulerInstance.cpp
-        Examples/SchedulerInstance/SchedulerProblem.h
-        Examples/SchedulerInstance/SchedulerProblem.cpp
-        Examples/SchedulerInstance/SchedulerPathSolver.h
-        Examples/SchedulerInstance/SchedulerPathSolver.cpp
+        Examples/SequencingInstance/SequencingState.h
+        Examples/SequencingInstance/SequencingInstance.h
+        Examples/SequencingInstance/SequencingInstance.cpp
+        Examples/SequencingInstance/SequencingProblem.h
+        Examples/SequencingInstance/SequencingProblem.cpp
+        Examples/SequencingInstance/SequencingPathSolver.h
+        Examples/SequencingInstance/SequencingPathSolver.cpp
         Examples/AbstractGurobiProblems/AbstractProblemGurobiClass.h
         Examples/AbstractGurobiProblems/AbstractProblemGurobiClass.cpp)
 
@@ -128,8 +128,8 @@ set(GUROBI_PROBLEMS_SOURCE
         Examples/SetCoverInstance/SetCoverGurobiClass.cpp
         Examples/SOCKnapsackInstance/SOCKnapsackGurobiClass.h
         Examples/SOCKnapsackInstance/SOCKnapsackGurobiClass.cpp
-        Examples/SchedulerInstance/SchedulerGurobiClass.h
-        Examples/SchedulerInstance/SchedulerGurobiClass.cpp)
+        Examples/SequencingInstance/SequencingGurobiClass.h
+        Examples/SequencingInstance/SequencingGurobiClass.cpp)
 
 add_library(Exceptions ${EXCEPTIONS_SOURCE})
 add_library(Problems ${PROBLEMS_SOURCE})
@@ -242,7 +242,7 @@ add_executable(DD_optimization_program_tests
         Test/test_GraphEqualOperation.cpp
         Test/test_IndependentSetProblemSort.cpp
         Test/test_SetCoverProblemSort.cpp
-        Test/test_SchedulerProblem.cpp
+        Test/test_SequencingProblem.cpp
 )
 
 target_link_libraries(DD_optimization_program_tests PRIVATE

@@ -370,7 +370,7 @@ pub struct SOCKnapsackFile {
 ///   ... (m rows total)
 /// ```
 pub fn read_instance<P: AsRef<Path>>(fname: P) -> SOCKnapsackFile {
-    let file = File::open(fname).expect("No se pudo abrir el archivo");
+    let file = File::open(fname).expect("Could not open the file");
     let mut reader = BufReader::new(file);
     let mut line = String::new();
 
@@ -437,10 +437,10 @@ fn main() {
     let input_file = &args[1];
     let output_file = &args[2];
     let comp_type_str = &args[3];
-    let max_width: usize = args[4].parse().expect("max_width debe ser un número");
+    let max_width: usize = args[4].parse().expect("max_width must be a number");
     let constraint_index: usize = args
         .get(5)
-        .map(|s| s.parse().expect("constraint_index debe ser un número"))
+        .map(|s| s.parse().expect("constraint_index must be a number"))
         .unwrap_or(0);
 
     let comp_type = match comp_type_str.to_lowercase().as_str() {
@@ -448,7 +448,7 @@ fn main() {
         "relaxed" => CompilationType::Relaxed,
         "restricted" => CompilationType::Restricted,
         _ => {
-            eprintln!("Tipo de compilación inválido. Usa: Exact | Relaxed | Restricted");
+            eprintln!("Invalid compilation type. Use: Exact | Relaxed | Restricted");
             std::process::exit(1);
         }
     };

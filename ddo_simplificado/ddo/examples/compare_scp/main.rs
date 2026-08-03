@@ -138,7 +138,7 @@ impl StateRanking for SCPRanking {
     }
 }
 
-/// Lee una instancia del Set Covering Problem con el mismo formato que el código en C++.
+/// Reads a Set Covering Problem instance with the same format as the C++ code.
 /// 
 /// Formato esperado:
 /// ```txt
@@ -150,10 +150,10 @@ impl StateRanking for SCPRanking {
 /// ...
 /// <fila_m>
 /// ```
-/// Donde cada fila de la matriz representa si la variable j cubre o no la restricción i.
-/// Lee una instancia del SCP desde archivo, incluyendo la heurística de ordenamiento por cobertura.
+/// Each row of the matrix indicates whether variable j covers constraint i or not.
+/// Reads an SCP instance from a file, including the coverage-based ordering heuristic.
 pub fn read_instance<P: AsRef<Path>>(fname: P) -> SCP {
-    let file = File::open(fname).expect("No se pudo abrir el archivo");
+    let file = File::open(fname).expect("Could not open the file");
     let mut reader = BufReader::new(file);
     let mut line = String::new();
 
@@ -232,14 +232,14 @@ fn main() {
     let input_file = &args[1];
     let output_file = &args[2];
     let comp_type_str = &args[3];
-    let max_width: usize = args[4].parse().expect("max_width debe ser un número");
+    let max_width: usize = args[4].parse().expect("max_width must be a number");
 
     let comp_type = match comp_type_str.to_lowercase().as_str() {
         "exact" => CompilationType::Exact,
         "relaxed" => CompilationType::Relaxed,
         "restricted" => CompilationType::Restricted,
         _ => {
-            eprintln!("Tipo de compilación inválido. Usa: Exact | Relaxed | Restricted");
+            eprintln!("Invalid compilation type. Use: Exact | Relaxed | Restricted");
             std::process::exit(1);
         }
     };
@@ -293,7 +293,7 @@ fn main() {
 
     match compilation_result {
         Ok(completion) => {
-            // Imprimir el resultado en un archivo CSV
+            // Write the result to a CSV file
             use std::fs::OpenOptions;
             use std::io::Write;
 
@@ -311,7 +311,7 @@ fn main() {
                 .open(file_path)
                 .expect("Cannot open results.csv");
 
-            // Dado que estoy maximizando, tengo que multiplicar por -1 para transformar el valor a minimizar
+            // Since we are maximizing, the value has to be multiplied by -1 to turn it into a minimization
             let best_value_str = dd.best_value()
                 .map_or("N/A".to_string(), |v| (-v).to_string());
 

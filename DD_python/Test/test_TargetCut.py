@@ -10,13 +10,13 @@ sys.path.append(parent_dir)
 from SourceCode.DD import DD
 from SourceCode.DDCutGenerators.TargetCut import TargetCut
 from Exceptions.MyExceptions import NoCutsFound
-from Examples.SchedulerInstance.SchedulerProblem import SchedulerProblem
+from Examples.SequencingInstance.SequencingProblem import SequencingProblem
 
 
-class TestTargetCutScheduler(unittest.TestCase):
+class TestTargetCutSequencing(unittest.TestCase):
 
     @staticmethod
-    def _scheduler_params():
+    def _sequencing_params():
         """3 jobs, symmetric setup times → ω = (1.0, 1.0, 1.0) by symmetry."""
         return SimpleNamespace(
             n_jobs=3,
@@ -42,7 +42,7 @@ class TestTargetCutScheduler(unittest.TestCase):
         return dd
 
     def setUp(self):
-        self.dd = self._build_exact_dd(SchedulerProblem(self._scheduler_params()))
+        self.dd = self._build_exact_dd(SequencingProblem(self._sequencing_params()))
         self.tc = TargetCut(self.dd)
 
     def test_instantiation(self):
@@ -59,7 +59,7 @@ class TestTargetCutScheduler(unittest.TestCase):
             self.assertLessEqual(w, 2.0, f"ω[{k}] > 2")
 
     def test_omega_symmetric(self):
-        """3-job scheduler with uniform setup structure → ω = (1, 1, 1)."""
+        """3-job sequencing instance with uniform setup structure → ω = (1, 1, 1)."""
         for k, w in enumerate(self.tc.omega):
             self.assertAlmostEqual(w, 1.0, places=10,
                                    msg=f"Expected ω[{k}]=1.0, got {w}")
@@ -104,7 +104,7 @@ class TestTargetCutScheduler(unittest.TestCase):
         self.assertGreaterEqual(self.tc.get_time(), 0.0)
 
     def test_is_equality_cut_true_for_infeasible(self):
-        """For the scheduler MDD, infeasible points always yield an equality cut (unbounded LP)."""
+        """For the sequencing MDD, infeasible points always yield an equality cut (unbounded LP)."""
         self.tc.generate_cut([0.0, 0.0, 0.0])
         self.assertTrue(self.tc.is_equality_cut())
 

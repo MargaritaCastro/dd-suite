@@ -15,7 +15,7 @@ def main():
         print("\t\t-Knapsack        Knapsack")
         print("\t\t-IndependentSet  Independent Set")
         print("\t\t-SOCKnapsack     SOC Knapsack")
-        print("\t\t-Scheduler       Scheduler")
+        print("\t\t-Sequencing       Sequencing")
         print("\n\tCut type (default: first valid cut for the selected problem):")
         print("\t\t-FlowCuts        Combinatorial cuts from DD")
         print("\t\t-JointFlowCuts   Dual cuts from DD")
@@ -56,8 +56,8 @@ def main():
             problem_class = ProblemClass.INDEPENDENT_SET
         elif arg == "-SOCKnapsack":
             problem_class = ProblemClass.SOC_KNAPSACK
-        elif arg == "-Scheduler":
-            problem_class = ProblemClass.SCHEDULER
+        elif arg == "-Sequencing":
+            problem_class = ProblemClass.SEQUENCING
         elif arg == "-FlowCuts":
             cut_type = CutType.FLOW
         elif arg == "-JointFlowCuts":

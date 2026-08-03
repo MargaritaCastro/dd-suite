@@ -1,26 +1,14 @@
-# ddo_simplificado — Simplified version of DDO (Rust)
+# Antonia Blanco — Experiments with DDO in Rust 
 
-> ⚠️ **This is NOT the original DDO library.**
->
-> This folder holds a **simplified copy** of the DDO library created by **Xavier Gillard**, whose real and official repository is:
->
-> ### 👉 [https://github.com/xgillard/ddo](https://github.com/xgillard/ddo)
->
-> The code has been **trimmed down** to keep only what is needed to benchmark DDO against `dd-suite`: the core solver plus the example problems used in the comparisons. **For any purpose other than reproducing the experiments in this repository, use the original repository** — it is the complete, maintained, and authoritative version.
->
-> The original license is preserved in [`LICENSE.txt`](./LICENSE.txt) (© 2020 Xavier Gillard).
-
-The comparisons are driven by the `main.rs` files under [`ddo/examples/`](./ddo/examples), one per problem:
+This project is based on code created by **Xavier Gillard** in the repository [https://github.com/xgillard/ddo](https://github.com/xgillard/ddo) to compare different types of decision diagram (DDO) compilations. The main files used to perform these comparisons are located in the [`ddo/examples`](./ddo/examples) folder, specifically in:
 
 - `ddo/examples/compare_knapsack/main.rs` — Knapsack
 - `ddo/examples/compare_misp/main.rs` — Independent Set
 - `ddo/examples/compare_scp/main.rs` — Set Cover
 - `ddo/examples/compare_socknapsack/main.rs` — SOC Knapsack
-- `ddo/examples/compare_scheduler/main.rs` — Scheduler
+- `ddo/examples/compare_sequencing/main.rs` — Sequencing
 
-> ⚠️ The `main.rs` files inside `ddo/examples/compare_PROBLEM_NAME/` are used directly because a new executable has not been configured outside the examples directory.
-
-The CSV results produced here are the ones stored in `../data_visualization/data/rust/`, used by `rust_plots.py` and `bounds_table.py` to compare Rust against the C++ and Python implementations.
+> ⚠️ The `main.rs` files inside `/examples/compare_PROBLEM_NAME/` are used directly because a new executable has not been configured outside the examples directory.
 
 ---
 
@@ -28,7 +16,7 @@ The CSV results produced here are the ones stored in `../data_visualization/data
 
 - Rust (`cargo`)
 - Bash (to run the `.sh` scripts)
-- The `resources/` folder at the root of `ddo_simplificado/`, with the input files for each problem type (`knapsack/`, `misp/`, `scp/`, `socknapsack/`, `scheduler/`)
+- A `resources/` folder with input files for each problem type
 
 ---
 
@@ -68,7 +56,7 @@ To run an example manually, use the following command:
 cargo run --example EXAMPLE_NAME -- INPUT_FILE OUTPUT_FILE COMPILE_TYPE MAX_WIDTH
 ```
 
-* `EXAMPLE_NAME`: one of compare_knapsack, compare_misp, compare_scp, compare_socknapsack, or compare_scheduler
+* `EXAMPLE_NAME`: one of compare_knapsack, compare_misp, compare_scp, compare_socknapsack, or compare_sequencing
 * `INPUT_FILE`: the name of the input file (without the full path)
 * `OUTPUT_FILE`: the name of the output file (e.g., results.csv)
 * `COMPILE_TYPE`: one of "Exact", "Restricted", or "Relaxed"
@@ -80,7 +68,7 @@ cargo run --example EXAMPLE_NAME -- INPUT_FILE OUTPUT_FILE COMPILE_TYPE MAX_WIDT
 * `../resources/misp/` for `compare_misp`
 * `../resources/scp/` for `compare_scp`
 * `../resources/socknapsack/` for `compare_socknapsack`
-* `../resources/scheduler/` for `compare_scheduler`
+* `../resources/sequencing/` for `compare_sequencing`
 
 ## 4. Run in Release Mode
 
@@ -101,12 +89,12 @@ cargo clean
 
 ## 📁 Available Scripts
 
-There are Bash scripts (`.sh`) that automate the batch execution of experiments for each problem type:
+Bash scripts (`.sh`) that automate the batch execution of experiments. There is one per problem except SOC Knapsack, which is only run from the cluster scripts:
 
 * `run_knapsack.sh`
 * `run_misp.sh`
 * `run_scp.sh`
-* `run_scheduler.sh`
+* `run_sequencing.sh`
 
 ### Example: run_knapsack.sh
 

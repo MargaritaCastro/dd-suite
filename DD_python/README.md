@@ -61,25 +61,31 @@ Below is a list of available flags and their descriptions:
 
 | Flag                | Description                                          |
 | ------------------- | ---------------------------------------------------- |
-| `-SetCover`    | Specifies the problem class as Set Cover          |
+| `-SetCover`       | Specifies the problem class as Set Cover             |
 | `-Knapsack`       | Specifies the problem class as Knapsack Instance     |
 | `-IndependentSet` | Specifies the problem class as Independent Set       |
+| `-SOCKnapsack`    | Specifies the problem class as SOC Knapsack          |
+| `-Sequencing`     | Specifies the problem class as Sequencing            |
 | `-Exact`          | Specifies the decision diagram type as Exact         |
 | `-Restricted`     | Specifies the decision diagram type as Restricted    |
 | `-RelaxPriority`  | Specifies the DD type as Relaxed (merge nodes by priority)              |
 | `-RelaxGrouping`  | Specifies the DD type as Relaxed (merge nodes in groups by priority difference) |
-| `-width_`         | Sets the maximum width for Restricted/Relaxed DD     |
+| `-Width_`         | Sets the maximum width for Restricted/Relaxed DD     |
 | `-Reduce`         | Enables reduction of the decision diagram            |
 | `-Verbose`        | Enables verbose mode for detailed output             |
 | `-Export`         | Enables export of the decision diagram               |
 | `-Max`            | Computes the longest path (default is shortest path) |
 | `-Min`            | Computes the shortest path                           |
-| `-output_`        | Specifies the output file path                       |
+| `-NoSort`         | Disables the variable-ordering heuristic             |
+| `-Output_`        | Specifies the output file path                       |
+
+Flags are matched by exact string, so the capitalisation above matters: `-width_100` or
+`-output_x.txt` are silently ignored.
 
 #### Example Execution
 
 ```
-python main.py example_input.txt -SetCover -Exact -width_100 -Reduce -Verbose -output_result.txt
+python main.py example_input.txt -SetCover -Exact -Width_100 -Reduce -Verbose -Output_result.txt
 ```
 
 #### Output Example
@@ -115,19 +121,21 @@ Below is a list of available flags and their descriptions:
 
 | Flag                | Description                                            |
 | ------------------- | ------------------------------------------------------ |
-| `-SetCover`    | Specifies the problem class as Set Cover            |
+| `-SetCover`       | Specifies the problem class as Set Cover               |
 | `-Knapsack`       | Specifies the problem class as Knapsack Instance       |
 | `-IndependentSet` | Specifies the problem class as Independent Set         |
+| `-SOCKnapsack`    | Specifies the problem class as SOC Knapsack            |
+| `-Sequencing`     | Specifies the problem class as Sequencing              |
 | `-Verbose`        | Enables verbose mode for detailed output               |
 | `-Continuous`     | Uses continuous variables instead of integer variables |
-| `-output_`        | Specifies the output file path                         |
+| `-Output_`        | Specifies the output file path                         |
 
 #### Example Execution
 
 Here is an example command to run the program:
 
 ```
-python main_gurobi.py example_input.txt -SetCover -Verbose -Continuous -output_solution.txt
+python main_gurobi.py example_input.txt -SetCover -Verbose -Continuous -Output_solution.txt
 ```
 
 #### Output Example
@@ -159,20 +167,28 @@ Below is a list of available flags and their descriptions:
 
 | Flag                | Description                                            |
 | ------------------- | ------------------------------------------------------ |
-| `-SetCover`    | Specifies the problem class as Set Cover            |
+| `-SetCover`       | Specifies the problem class as Set Cover               |
 | `-Knapsack`       | Specifies the problem class as Knapsack Instance       |
 | `-IndependentSet` | Specifies the problem class as Independent Set         |
+| `-SOCKnapsack`    | Specifies the problem class as SOC Knapsack            |
+| `-Sequencing`     | Specifies the problem class as Sequencing              |
+| `-Exact`          | Builds the cut-generating DD as Exact                  |
+| `-Restricted`     | Builds the cut-generating DD as Restricted             |
+| `-RelaxPriority`  | Builds the cut-generating DD as Relaxed (by priority)  |
+| `-RelaxGrouping`  | Builds the cut-generating DD as Relaxed (by grouping)  |
+| `-Width_`         | Sets the maximum width of the cut-generating DD        |
 | `-Verbose`        | Enables verbose mode for detailed output               |
 | `-Continuous`     | Uses continuous variables instead of integer variables |
 | `-FlowCuts`       | Select combinatorial cuts to the model.                |
 | `-JointFlowCuts`  | Select dual cuts to the model                          |
 | `-TargetCuts`     | Select target cuts from relaxed MDD (all problems)     |
-| `-output_`        | Specifies the output file path                         |
+| `-CutStrengthening` | Lifts every generated inequality into a tighter one  |
+| `-Output_`        | Specifies the output file path                         |
 
 #### Example Execution
 
 ```
-python main_cuts.py example_file.txt -Knapsack -Continuous -FlowCuts -Verbose -output_result.txt
+python main_cuts.py example_file.txt -Knapsack -Continuous -FlowCuts -Verbose -Output_result.txt
 ```
 
 #### Output Example
@@ -335,7 +351,7 @@ Three cut generators are available, all sharing the same interface:
 
 - **FlowCuts**: combinatorial cuts derived from a min-cut on the DD. Requires a binary DD (BDD).
 - **JointFlowCuts**: dual flow cuts, typically tighter than FlowCuts. Requires a binary DD (BDD).
-- **TargetCut**: target cuts from a relaxed MDD (Tjandraatmadja & van Hoeve, 2019). Works for any MDD, including problems with multi-valued domains (e.g., Scheduler). Computes the geometric center ω of conv(S) and solves an LP to separate x̄ from the set.
+- **TargetCut**: target cuts from a relaxed MDD (Tjandraatmadja & van Hoeve, 2019). Works for any MDD, including problems with multi-valued domains (e.g., Sequencing). Computes the geometric center ω of conv(S) and solves an LP to separate x̄ from the set.
 
 To use any of them, instantiate the class with the `dd_instance` created earlier, then call `generate_cut(x_values)`. The method returns `True` if a cut was found. Retrieve it with `get_cut()` (returns `(coefficients, constant)`). For `FlowCuts`, `get_min_cut()` returns the minimum cut value.
 
@@ -385,7 +401,7 @@ For a more comprehensive understanding of these classes, it is recommended to th
 | `IndependentSetInstance/`   | Independent Set  | `bitarray`              |
 | `SetCoverInstance/`         | Set Cover        | `bitarray`              |
 | `SOCKnapsack/`              | SOCKnapsack      | `list[float]`           |
-| `SchedulerInstance/`        | Scheduler        | `tuple(frozenset,…)`    |
+| `SequencingInstance/`        | Sequencing        | `tuple(frozenset,…)`    |
 
 Each folder contains a `*Problem` (DD logic), `*Instance` (file parser), and `*GurobiClass` (Gurobi model).
 

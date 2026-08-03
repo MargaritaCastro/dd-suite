@@ -34,8 +34,8 @@ void RelaxedGroupingDDBuilder<T>::merge_nodes_when_width_is_greater_than_w() {
     for (Node<T>* node : this->graph->structure.back()) {
         alive.emplace_back(merge_priority(node), node);
     }
-    sort(alive.begin(), alive.end(),
-         [](const pair<int, Node<T>*>& a, const pair<int, Node<T>*>& b) { return a.first < b.first; });
+    stable_sort(alive.begin(), alive.end(),
+                [](const pair<int, Node<T>*>& a, const pair<int, Node<T>*>& b) { return a.first < b.first; });
 
     int difference = 0;
     while (static_cast<int>(alive.size()) > max_width) {
@@ -92,8 +92,8 @@ vector<pair<int, Node<T>*>> RelaxedGroupingDDBuilder<T>::merge_nodes_with_differ
         }
     }
 
-    sort(unique_alive.begin(), unique_alive.end(),
-         [](const pair<int, Node<T>*>& a, const pair<int, Node<T>*>& b) { return a.first < b.first; });
+    stable_sort(unique_alive.begin(), unique_alive.end(),
+                [](const pair<int, Node<T>*>& a, const pair<int, Node<T>*>& b) { return a.first < b.first; });
     return unique_alive;
 }
 
