@@ -23,6 +23,7 @@ void DD<T>::create_decision_diagram(const bool verbose) {
     auto start = chrono::steady_clock::now();
     ExactDDBuilder dDBuilder(problem);
     graph_DD = dDBuilder.get_decision_diagram(verbose);
+    dd_kind = DDKind::Exact;
 
     auto end = chrono::steady_clock::now();
 
@@ -42,6 +43,7 @@ void DD<T>::create_restricted_decision_diagram(int max_width, const bool verbose
 
     RestrictedDDBuilder restrictedDDBuilder(problem, max_width);
     graph_DD = restrictedDDBuilder.get_decision_diagram(verbose);
+    dd_kind = DDKind::Restricted;
     auto end = chrono::steady_clock::now();
 
     dd_builder_time = chrono::duration<double>(end - start);
@@ -59,6 +61,7 @@ void DD<T>::create_relax_priority_decision_diagram(int max_width, const bool ver
 
     RelaxedPriorityDDBuilder relaxedDDBuilder(problem, max_width);
     graph_DD = relaxedDDBuilder.get_decision_diagram(verbose);
+    dd_kind = DDKind::Relaxed;
 
     auto end = chrono::steady_clock::now();
     cout << "Relax priority decision diagram creation completed." << endl;
@@ -77,6 +80,7 @@ void DD<T>::create_relax_grouping_decision_diagram(int max_width, const bool ver
 
     RelaxedGroupingDDBuilder relaxedGroupingDDBuilder(problem, max_width);
     graph_DD = relaxedGroupingDDBuilder.get_decision_diagram(verbose);
+    dd_kind = DDKind::Relaxed;
 
     auto end = chrono::steady_clock::now();
     cout << "Relax grouping decision diagram creation completed." << endl;
@@ -108,6 +112,11 @@ string DD<T>::get_building_time() {
 template <typename T>
 string DD<T>::get_reduction_time() {
     return to_string(dd_reduction_time.count());
+}
+
+template <typename T>
+DDKind DD<T>::get_dd_kind() const {
+    return dd_kind;
 }
 
 template <typename T>

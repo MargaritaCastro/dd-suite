@@ -26,6 +26,7 @@ class DD():
 
         self.problem: 'AbstractProblem' = problem
         self._graph_DD: 'Graph' = None
+        self._dd_kind: str = 'exact'
 
     def create_decision_diagram(self, verbose: bool = False) -> None:
         '''
@@ -42,6 +43,7 @@ class DD():
         start_time: float = time.time()  
         self.exact_dd_builder: 'ExactDDBuilder' = ExactDDBuilder(self.problem)
         self._graph_DD = self.exact_dd_builder.get_decision_diagram(verbose)
+        self._dd_kind = 'exact'
         end_time: float = time.time()  
         self._dd_builder_time = round(end_time - start_time, 4)
 
@@ -62,6 +64,7 @@ class DD():
         start_time: float = time.time()  
         self.restricted_dd_builder: 'RestrictedDDBuilder' = RestrictedDDBuilder(self.problem, max_width)
         self._graph_DD: 'Graph' = self.restricted_dd_builder.get_decision_diagram(verbose)
+        self._dd_kind = 'restricted'
         end_time: float = time.time()  
         self._dd_builder_time = round(end_time - start_time, 4)
         print(f"Restricted decision diagram creation completed.")
@@ -81,6 +84,7 @@ class DD():
         start_time: float = time.time()
         self.relaxed_dd_builder: 'RelaxedPriorityDDBuilder' = RelaxedPriorityDDBuilder(self.problem, max_width)
         self._graph_DD: 'Graph' = self.relaxed_dd_builder.get_decision_diagram(verbose)
+        self._dd_kind = 'relaxed'
         end_time: float = time.time()
         self._dd_builder_time = round(end_time - start_time, 4)
         print(f"Relaxed decision diagram creation completed.")
@@ -100,6 +104,7 @@ class DD():
         start_time: float = time.time()
         self.relaxed_dd_builder: 'RelaxedGroupingDDBuilder' = RelaxedGroupingDDBuilder(self.problem, max_width)
         self._graph_DD: 'Graph' = self.relaxed_dd_builder.get_decision_diagram(verbose)
+        self._dd_kind = 'relaxed'
         end_time: float = time.time()
         self._dd_builder_time = round(end_time - start_time, 4)
         print(f"Relax grouping decision diagram creation completed.")
@@ -170,6 +175,16 @@ class DD():
         float: The execution time of the DDBuilder.
         '''
         return self._dd_builder_time
+
+    def get_dd_kind(self) -> str:
+        '''
+        Returns which builder produced the diagram: 'exact', 'restricted' or
+        'relaxed'. Reducing the diagram does not change it.
+
+        Returns:
+        str: The kind of decision diagram that was built.
+        '''
+        return self._dd_kind
 
     def get_reduction_time(self) -> float:
         '''

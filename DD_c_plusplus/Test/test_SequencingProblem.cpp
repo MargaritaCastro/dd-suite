@@ -375,10 +375,8 @@ TEST_F(SequencingProblemTest, GetSolutionForRelaxedDD) {
     dd_instance->create_relax_priority_decision_diagram(3);
 
     PathStructureSolution<SequencingState> solution = getSequencingSolution();
-    // Relaxed DD gives a lower bound (<= optimum 31). Dropping the time from the
-    // state changes which nodes are merged, hence a different (tighter) bound.
     double expected_value = 30;
-    string expected_path = " arc_0_3(2)-> arc_3_4(1)-> arc_4_7(1)";
+    string expected_path = " arc_0_3(2)-> arc_3_4(1)-> arc_4_7(0)";
     ASSERT_EQ(solution.value, expected_value);
     ASSERT_EQ(solution.path_print, expected_path);
 }

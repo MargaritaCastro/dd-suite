@@ -6,6 +6,7 @@
 SequencingPathSolver::SequencingPathSolver(DD<SequencingState>& dd)
     : graph_(dd.get_decision_diagram()),
       problem_(dynamic_cast<const SequencingProblem*>(&dd.problem)),
+      relaxed_(dd.get_dd_kind() == DDKind::Relaxed),
       time_(chrono::duration<double>(0))
 {}
 
@@ -47,11 +48,56 @@ void SequencingPathSolver::initialize_dp_tables(
     dp_arcs.assign(total_nodes, nullptr);
     Node<SequencingState>* root_node = graph_->structure.front().front();
     NodeDP& root_dp = dp_data[root_node->get_id()];
-    root_dp.cost             = 0.0;
-    root_dp.last_job         = -1;
-    root_dp.scheduled_weight = 0;
-    root_dp.scheduled_mask   = 0;
-    root_dp.valid            = true;
+    root_dp.cost                = 0.0;
+    // Nothing is scheduled yet and the only possible previous job is the depot.
+    root_dp.previous_jobs       = uint64_t{1} << 0;
+    root_dp.seen_jobs           = 0;
+    root_dp.scheduled_weight_hi = 0;
+    root_dp.scheduled_weight_lo = 0;
+    root_dp.valid               = true;
+}
+
+int SequencingPathSolver::best_setup(uint64_t previous_jobs, int job_id, bool charge_most) const {
+    // Dearest setup among the possible previous jobs when charging the most, the
+    // cheapest one otherwise.
+    int best = -1;
+    uint64_t remaining = previous_jobs;
+    while (remaining) {
+        int index = __builtin_ctzll(remaining);
+        int candidate = problem_->setup_times[index][job_id];
+        if (best < 0)          best = candidate;
+        else if (charge_most)  best = max(best, candidate);
+        else                   best = min(best, candidate);
+        remaining &= remaining - 1;
+    }
+    return best;
+}
+
+SequencingPathSolver::NodeDP SequencingPathSolver::describe_node(
+    const Node<SequencingState>* node, const vector<NodeDP>& dp_data, int total_weight) const
+{
+    // Merge into one description everything the incoming paths can look like.
+    NodeDP current;
+    current.scheduled_weight_lo = numeric_limits<int>::max();
+    for (Arc<SequencingState>* arc : node->in_arcs) {
+        const NodeDP& parent = dp_data[arc->parent_node->get_id()];
+        if (!parent.valid) continue;
+
+        const int job_id = arc->variable_value;
+        const uint64_t job_bit = uint64_t{1} << job_id;
+        const int job_weight = problem_->weights[job_id];
+
+        current.valid          = true;
+        current.previous_jobs |= uint64_t{1} << (job_id + 1);
+        current.seen_jobs     |= parent.seen_jobs | job_bit;
+        // A job already seen adds no weight, and the total is capped at W_total.
+        current.scheduled_weight_hi = max(current.scheduled_weight_hi,
+                                          min(total_weight, parent.scheduled_weight_hi + job_weight));
+        current.scheduled_weight_lo = min(current.scheduled_weight_lo,
+                                          parent.scheduled_weight_lo
+                                              + ((parent.seen_jobs & job_bit) ? 0 : job_weight));
+    }
+    return current;
 }
 
 void SequencingPathSolver::forward_pass(
@@ -60,38 +106,37 @@ void SequencingPathSolver::forward_pass(
     int total_weight = 0;
     for (int w : problem_->weights) total_weight += w;
 
+    const bool maximising = cost_sign < 0;
+    // Relaxed may not overcharge, the rest may not undercharge; max swaps it.
+    const bool charge_most = (relaxed_ == maximising);
+
     for (size_t layer_idx = 1; layer_idx < graph_->structure.size(); ++layer_idx) {
         for (Node<SequencingState>* node : graph_->structure[layer_idx]) {
             int node_id = node->get_id();
+            NodeDP current = describe_node(node, dp_data, total_weight);
+            if (!current.valid) continue;
+
             for (Arc<SequencingState>* arc : node->in_arcs) {
-                int parent_id = arc->parent_node->get_id();
-                const NodeDP& parent = dp_data[parent_id];
+                const NodeDP& parent = dp_data[arc->parent_node->get_id()];
                 if (!parent.valid) continue;
 
                 int job_id   = arc->variable_value;
-                int setup    = problem_->setup_times[parent.last_job + 1][job_id];
+                int setup    = best_setup(parent.previous_jobs, job_id, charge_most);
                 int duration = setup + problem_->processing_times[job_id];
-                // Separable contribution: duration * (weight of jobs scheduled now
-                // and later) = duration * (W_total - already_scheduled).
-                int remaining_weight = total_weight - parent.scheduled_weight;
-                double arc_cost = static_cast<double>(duration) * remaining_weight;
+                // duration * (W_total - already_scheduled), taking the end of the
+                // range that keeps the bound.
+                int scheduled = charge_most ? parent.scheduled_weight_lo
+                                            : parent.scheduled_weight_hi;
+                double arc_cost = static_cast<double>(duration) * (total_weight - scheduled);
                 double candidate_cost = parent.cost + cost_sign * arc_cost;
 
-                NodeDP& current = dp_data[node_id];
-                if (!current.valid || candidate_cost < current.cost) {
-                    const uint64_t job_bit = uint64_t{1} << job_id;
-                    const int parent_weight = parent.scheduled_weight;
-                    const uint64_t parent_mask = parent.scheduled_mask;
-                    current.cost             = candidate_cost;
-                    current.last_job         = job_id;
-                    current.scheduled_weight = (parent_mask & job_bit)
-                                                   ? parent_weight
-                                                   : parent_weight + problem_->weights[job_id];
-                    current.scheduled_mask   = parent_mask | job_bit;
-                    current.valid            = true;
+                if (candidate_cost < current.cost) {
+                    current.cost     = candidate_cost;
                     dp_arcs[node_id] = arc;
                 }
             }
+
+            dp_data[node_id] = current;
         }
     }
 }

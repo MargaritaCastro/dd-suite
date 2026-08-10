@@ -271,11 +271,8 @@ class SequencingProblemTest(unittest.TestCase):
         self.dd_instance.create_relax_priority_decision_diagram(3, verbose=False)
         value, path = self.get_value_path_solution()
 
-        # Relaxed DD gives a lower bound (<= optimum 31). Dropping the time from
-        # the state changes which nodes are merged, hence a different (tighter)
-        # bound and path than before.
         self.assertEqual(value, 30)
-        self.assertEqual(path, ' arc_0_3(2)-> arc_3_4(1)-> arc_4_7(1)')
+        self.assertEqual(path, ' arc_0_3(2)-> arc_3_4(1)-> arc_4_7(0)')
 
     def test_compare_two_different_graphs(self):
         self.dd_instance.create_decision_diagram(False)

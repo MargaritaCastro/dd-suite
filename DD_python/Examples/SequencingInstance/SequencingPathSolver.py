@@ -2,44 +2,34 @@ import time
 from SourceCode.GraphAlgorithms.ShortestLongestPath.PathStructure import PathStructureSolution
 
 
+class _NodeDP:
+    """Best cost reaching a node plus the range its paths span, which prices the
+    outgoing arcs: possible last jobs (bitmask with the +1 offset of `setup_times`),
+    weight already scheduled (hi/lo) and jobs seen. One state per node -> a point."""
+
+    __slots__ = ("cost", "previous_jobs", "scheduled_weight_hi",
+                 "scheduled_weight_lo", "seen_jobs")
+
+    def __init__(self, cost, previous_jobs, scheduled_weight_hi,
+                 scheduled_weight_lo, seen_jobs):
+        self.cost = cost
+        self.previous_jobs = previous_jobs
+        self.scheduled_weight_hi = scheduled_weight_hi
+        self.scheduled_weight_lo = scheduled_weight_lo
+        self.seen_jobs = seen_jobs
+
+
 class SequencingPathSolver:
-    """
-    DP-based shortest/longest path solver for the single-machine sequencing problem.
-
-    Computes the exact Σ w_j * C_j objective in a SEPARABLE way, so the diagram
-    no longer needs the accumulated completion time inside its state.
-
-    Using the identity
-        Σ_j w_j C_j = Σ_i d_i * R_i,
-    where d_i = setup(prev, job_i) + p[job_i] is the duration added at step i and
-    R_i = Σ_{k>=i} w_{π_k} is the total weight of the jobs scheduled at step i and
-    later, the contribution of the arc that schedules `job_id` becomes
-        (setup + p[job_id]) * (W_total - weight_of_jobs_already_scheduled).
-    This depends only on the parent's last_job and scheduled set (not on time),
-    yet sums to exactly Σ_j w_j C_j along any full path.
-
-    The forward DP still tracks last_job along each path (instead of the time), so
-    it stays correct even on reduced / merged diagrams, where a node's stored state
-    may not match a particular path.
-
-    The weight of the jobs already scheduled is tracked as the *set* of distinct
-    jobs seen along the path (a bitmask), not as a running sum. On a relaxed
-    diagram the merge operator intersects the scheduled sets, so a single path may
-    schedule the same job several times; a running sum would then add that job's
-    weight once per occurrence, exceed W_total, and make `remaining_weight`
-    negative, which collapses the bound (values below zero were observed). Because
-    the bitmask is always a subset of the n jobs, `remaining_weight` is
-    non-negative by construction, and on a feasible path (a permutation) the set
-    after i arcs is exactly the set of scheduled jobs, so the contribution is the
-    exact R_i and the bound remains valid.
-
-    Interface mirrors ShortestLongestPath so it can be used as a drop-in
-    replacement inside create_and_solve_dd.
+    """Shortest/longest path solver for Sequencing, drop-in for ShortestLongestPath.
+    Σ w_j C_j is charged per arc as (setup + p[job]) * (W_total - already scheduled);
+    both terms depend on the path, so each node covers all of its paths (`_NodeDP`)
+    and its arcs take the extreme that keeps the bound (relaxed under, the rest over).
     """
 
     def __init__(self, dd: 'DD'):
         self._graph = dd.get_decision_diagram()
         self._problem = dd.problem
+        self._relaxed: bool = dd.get_dd_kind() == 'relaxed'
         self._time: float = 0
         self._solution: PathStructureSolution = PathStructureSolution()
         self._objective: str = ""
@@ -69,43 +59,85 @@ class SequencingPathSolver:
 
     def _initialize_dp_tables(self):
         total_nodes = self._graph.get_node_count()
-        dp_data = [None] * total_nodes  # (cost, last_job, scheduled_weight, scheduled_mask)
+        dp_data: list = [None] * total_nodes
         dp_arcs = [None] * total_nodes
         root_node = self._graph.structure[0][0]
-        dp_data[root_node.get_id()] = (0, -1, 0, 0)
+        # Nothing is scheduled yet and the only possible previous job is the depot.
+        dp_data[root_node.get_id()] = _NodeDP(0, 1 << 0, 0, 0, 0)
         return dp_data, dp_arcs
+
+    def _best_setup(self, previous_jobs: int, job_id: int, charge_most: bool) -> int:
+        """Setup for `job_id` over the possible previous jobs: the dearest one when
+        charging the most, the cheapest one otherwise."""
+        setup_times = self._problem.setup_times
+        best = None
+        remaining = previous_jobs
+        while remaining:
+            lowest_bit = remaining & -remaining
+            candidate = setup_times[lowest_bit.bit_length() - 1][job_id]
+            if best is None:
+                best = candidate
+            elif charge_most:
+                best = max(best, candidate)
+            else:
+                best = min(best, candidate)
+            remaining ^= lowest_bit
+        return best
+
+    def _describe_node(self, incoming, total_weight) -> _NodeDP:
+        """Merge into one description everything the incoming paths can look like."""
+        node_dp = _NodeDP(float("inf"), 0, 0, float("inf"), 0)
+        for arc, parent in incoming:
+            job_id = arc.variable_value
+            job_bit = 1 << job_id
+            job_weight = self._problem.weights[job_id]
+            node_dp.previous_jobs |= 1 << (job_id + 1)
+            node_dp.seen_jobs |= parent.seen_jobs | job_bit
+            # A job already seen adds no weight, and the total is capped at W_total.
+            node_dp.scheduled_weight_hi = max(
+                node_dp.scheduled_weight_hi,
+                min(total_weight, parent.scheduled_weight_hi + job_weight))
+            node_dp.scheduled_weight_lo = min(
+                node_dp.scheduled_weight_lo,
+                parent.scheduled_weight_lo
+                + (0 if parent.seen_jobs & job_bit else job_weight))
+        return node_dp
 
     def _forward_pass(self, dp_data, dp_arcs, cost_sign) -> None:
         total_weight = sum(self._problem.weights)
+        maximising = cost_sign < 0
+        # Relaxed may not overcharge, the rest may not undercharge; max swaps it.
+        charge_most = (self._relaxed == maximising)
         for layer in self._graph.structure[1:]:
             for node in layer:
                 node_id = node.get_id()
-                for arc in node.in_arcs:
-                    parent_id = arc.parent_node.get_id()
-                    if dp_data[parent_id] is None:
-                        continue
-                    parent_cost, parent_last, parent_weight, parent_mask = dp_data[parent_id]
+                incoming = [(arc, dp_data[arc.parent_node.get_id()])
+                            for arc in node.in_arcs
+                            if dp_data[arc.parent_node.get_id()] is not None]
+                if not incoming:
+                    continue
+
+                node_dp = self._describe_node(incoming, total_weight)
+
+                for arc, parent in incoming:
                     job_id = arc.variable_value
-                    setup = self._problem.setup_times[parent_last + 1][job_id]
+                    setup = self._best_setup(parent.previous_jobs, job_id, charge_most)
                     duration = setup + self._problem.processing_times[job_id]
-                    # Separable contribution: duration * (weight of jobs scheduled
-                    # now and later) = duration * (W_total - already_scheduled).
-                    remaining_weight = total_weight - parent_weight
-                    arc_cost = duration * remaining_weight
-                    candidate_cost = parent_cost + cost_sign * arc_cost
-                    if dp_data[node_id] is None or candidate_cost < dp_data[node_id][0]:
-                        # A job already present in the mask adds no weight: on a
-                        # relaxed diagram the same job may be scheduled twice, and
-                        # counting it twice would push remaining_weight below zero.
-                        job_bit = 1 << job_id
-                        new_weight = parent_weight if parent_mask & job_bit \
-                            else parent_weight + self._problem.weights[job_id]
-                        dp_data[node_id] = (candidate_cost, job_id, new_weight, parent_mask | job_bit)
+                    # duration * (W_total - already_scheduled), taking the end of
+                    # the range that keeps the bound.
+                    scheduled = parent.scheduled_weight_lo if charge_most \
+                        else parent.scheduled_weight_hi
+                    arc_cost = duration * (total_weight - scheduled)
+                    candidate_cost = parent.cost + cost_sign * arc_cost
+                    if candidate_cost < node_dp.cost:
+                        node_dp.cost = candidate_cost
                         dp_arcs[node_id] = arc
+
+                dp_data[node_id] = node_dp
 
     def _extract_solution(self, dp_data, dp_arcs) -> None:
         terminal_id = self._graph.structure[-1][0].get_id()
-        optimal_cost = dp_data[terminal_id][0]
+        optimal_cost = dp_data[terminal_id].cost
         if self._objective == "max":
             optimal_cost = -optimal_cost
         self._solution.value = optimal_cost

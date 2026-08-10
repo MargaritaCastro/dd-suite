@@ -24,6 +24,11 @@
 using namespace std;
 
 /**
+ * @brief Which builder produced a decision diagram.
+ */
+enum class DDKind { Exact, Restricted, Relaxed };
+
+/**
  * @brief Class representing a decision diagram controller associated with a problem (DD).
  * @tparam T Type of the Node state values.
  */
@@ -94,12 +99,19 @@ public:
     string get_reduction_time();
 
     /**
+     * @brief Gets which builder produced the diagram.
+     * @return Exact, Restricted or Relaxed; Exact until a diagram is built.
+     */
+    DDKind get_dd_kind() const;
+
+    /**
      * @brief Destructor for the DD class.
      */
     ~DD();
 
 private:
     Graph<T>* graph_DD; /**< Decision diagram graph. */
+    DDKind dd_kind = DDKind::Exact; /**< Builder that produced the graph. */
 
     // Attributes that store the construction time of the decision diagrams.
     chrono::duration<double>  dd_builder_time = chrono::duration<double>(0);
