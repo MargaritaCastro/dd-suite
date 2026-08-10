@@ -57,7 +57,7 @@ class RestrictedDDBuilder(AbstractDDBuilder):
         - layer_id: Index of the current layer; the function operates on layer_id - 1.
         '''
         layer_id -= 1
-        if layer_id >= len(self.graph.structure) or layer_id <= 0:
+        if layer_id < 0 or layer_id >= len(self.graph.structure):
             return
 
         for node in self.graph.structure[layer_id]:

@@ -60,7 +60,7 @@ template <typename T>
 void RestrictedDDBuilder<T>::remove_outgoing_arcs_previous_layer(int layer_id){
 
     layer_id --;
-    if (layer_id >= this->graph->structure.size() or layer_id <= 0) {
+    if (layer_id < 0 or layer_id >= static_cast<int>(this->graph->structure.size())) {
         return;
     }
 

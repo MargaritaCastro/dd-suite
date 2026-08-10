@@ -453,3 +453,82 @@ TEST_F(SequencingProblemTest, TestCompareGMLRelaxedDDGraph) {
 
     ASSERT_TRUE(actual_output == expected_output);
 }
+
+class SequencingBoundsTest : public ::testing::Test {
+protected:
+    static constexpr double OPTIMUM = 138;
+
+    void SetUp() override {
+        string source_directory = fs::current_path().parent_path().string();
+        params = new SequencingInstance(source_directory + "/Test/txt_files/sequencing_bound_instance.txt");
+        problem_instance = new SequencingProblem(*params);
+    }
+
+    void TearDown() override {
+        delete problem_instance;
+        delete params;
+    }
+
+    enum class Build { Exact, Restricted, RelaxPriority, RelaxGrouping };
+
+    double solve(Build build, bool reduce) {
+        DD<SequencingState> dd(*problem_instance);
+        switch (build) {
+            case Build::Exact:         dd.create_decision_diagram(false); break;
+            case Build::Restricted:    dd.create_restricted_decision_diagram(2); break;
+            case Build::RelaxPriority: dd.create_relax_priority_decision_diagram(2); break;
+            case Build::RelaxGrouping: dd.create_relax_grouping_decision_diagram(2); break;
+        }
+        if (reduce) dd.reduce_decision_diagram();
+        SequencingPathSolver solver(dd);
+        solver.set_parameters({}, "min");
+        return solver.solve().value;
+    }
+
+    SequencingInstance* params;
+    SequencingProblem* problem_instance;
+};
+
+TEST_F(SequencingBoundsTest, ExactDDGivesTheOptimum) {
+    ASSERT_EQ(solve(Build::Exact, false), OPTIMUM);
+}
+
+TEST_F(SequencingBoundsTest, RelaxedDDIsALowerBound) {
+    for (Build build : {Build::RelaxPriority, Build::RelaxGrouping}) {
+        for (bool reduce : {false, true}) {
+            SCOPED_TRACE(reduce ? "reduced" : "not reduced");
+            ASSERT_LE(solve(build, reduce), OPTIMUM);
+        }
+    }
+}
+
+TEST_F(SequencingBoundsTest, RestrictedDDIsAnUpperBound) {
+    for (bool reduce : {false, true}) {
+        SCOPED_TRACE(reduce ? "reduced" : "not reduced");
+        ASSERT_GE(solve(Build::Restricted, reduce), OPTIMUM);
+    }
+}
+
+TEST_F(SequencingBoundsTest, ReducedExactDDIsAnUpperBound) {
+    ASSERT_GE(solve(Build::Exact, true), OPTIMUM);
+}
+
+TEST_F(SequencingBoundsTest, DDKind) {
+    DD<SequencingState> exact(*problem_instance);
+    exact.create_decision_diagram(false);
+    exact.reduce_decision_diagram();
+    ASSERT_EQ(exact.get_dd_kind(), DDKind::Exact);
+
+    DD<SequencingState> restricted(*problem_instance);
+    restricted.create_restricted_decision_diagram(2);
+    ASSERT_EQ(restricted.get_dd_kind(), DDKind::Restricted);
+
+    DD<SequencingState> priority(*problem_instance);
+    priority.create_relax_priority_decision_diagram(2);
+    ASSERT_EQ(priority.get_dd_kind(), DDKind::Relaxed);
+
+    DD<SequencingState> grouping(*problem_instance);
+    grouping.create_relax_grouping_decision_diagram(2);
+    ASSERT_EQ(grouping.get_dd_kind(), DDKind::Relaxed);
+}
+

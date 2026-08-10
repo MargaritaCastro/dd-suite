@@ -339,5 +339,74 @@ class SequencingProblemTest(unittest.TestCase):
         self.assertEqual(actual.strip(), expected.strip())
 
 
+class SequencingBoundsTest(unittest.TestCase):
+
+    OPTIMUM = 138
+
+    def setUp(self):
+        params = SimpleNamespace(
+            n_jobs=4,
+            processing_times=[5, 4, 4, 5],
+            weights=[3, 1, 5, 1],
+            setup_times=[
+                [0, 5, 6, 3],   # from depot
+                [0, 6, 6, 5],
+                [5, 0, 4, 3],
+                [6, 6, 0, 1],
+                [5, 2, 5, 0],
+            ],
+            initial_state=(frozenset(), -1),
+            variables=[(f'slot_{k}', [0, 1, 2, 3]) for k in range(4)],
+            objective_weights=[3, 1, 5, 1],
+        )
+        self.problem_instance: 'AbstractProblem' = SequencingProblem(params)
+
+    def solve(self, build, reduce=False):
+        dd_instance = DD(self.problem_instance)
+        build(dd_instance)
+        if reduce:
+            dd_instance.reduce_decision_diagram(verbose=False)
+        solver = SequencingPathSolver(dd_instance)
+        solver.set_parameters(self.problem_instance.weights, "min")
+        return solver.solve().value
+
+    def test_exact_dd_gives_the_optimum(self):
+        value = self.solve(lambda dd: dd.create_decision_diagram(False))
+        self.assertEqual(value, self.OPTIMUM)
+
+    def test_relaxed_dd_is_a_lower_bound(self):
+        builders = {
+            'RelaxPriority': lambda dd: dd.create_relax_priority_decision_diagram(2, False),
+            'RelaxGrouping': lambda dd: dd.create_relax_grouping_decision_diagram(2, False),
+        }
+        for name, build in builders.items():
+            for reduce in (False, True):
+                with self.subTest(dd=name, reduce=reduce):
+                    self.assertLessEqual(self.solve(build, reduce), self.OPTIMUM)
+
+    def test_restricted_dd_is_an_upper_bound(self):
+        build = lambda dd: dd.create_restricted_decision_diagram(2, False)
+        for reduce in (False, True):
+            with self.subTest(reduce=reduce):
+                self.assertGreaterEqual(self.solve(build, reduce), self.OPTIMUM)
+
+    def test_reduced_exact_dd_is_an_upper_bound(self):
+        value = self.solve(lambda dd: dd.create_decision_diagram(False), reduce=True)
+        self.assertGreaterEqual(value, self.OPTIMUM)
+
+    def test_dd_kind(self):
+        builders = {
+            'exact':      lambda dd: dd.create_decision_diagram(False),
+            'restricted': lambda dd: dd.create_restricted_decision_diagram(2, False),
+            'relaxed':    lambda dd: dd.create_relax_priority_decision_diagram(2, False),
+        }
+        for expected, build in builders.items():
+            with self.subTest(kind=expected):
+                dd_instance = DD(self.problem_instance)
+                build(dd_instance)
+                dd_instance.reduce_decision_diagram(verbose=False)
+                self.assertEqual(dd_instance.get_dd_kind(), expected)
+
+
 if __name__ == '__main__':
     unittest.main()
