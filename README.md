@@ -46,3 +46,18 @@ All data, plots, and tables derived from experimental runs are stored here, alon
 ---
 
 Each folder is designed to work independently and includes a dedicated `README.md` to help you get started.
+
+---
+
+## Paper and Citation
+
+We have a preprint associated with DD-suite available both in [arXiv](https://arxiv.org/abs/2608.10957) and [Optimization Online](https://optimization-online.org/2026/08/dd-suite-a-cross-platform-package-to-build-decision-diagrams-for-optimization-purposes/). Remember to cite our paper if you use DD-suite in your research project:
+
+```bibtex
+@article{blanco2026dd,
+  title={DD-suite: A cross-platform package to build Decision Diagrams for optimization purposes},
+  author={Blanco, Antonia F and Castro, Margarita and Toro Icarte, Rodrigo},
+  journal={arXiv preprint arXiv:2608.10957},
+  year={2026}
+}
+```
